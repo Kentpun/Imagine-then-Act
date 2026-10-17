@@ -1,0 +1,73 @@
+# Tiny local run to validate the pipeline without LIBERO download / GPU hours.
+seed: 0
+
+paths:
+  root: .
+  raw_dir: data/raw/libero
+  processed_dir: data/processed_smoke
+  frames_dir: data/processed_smoke/frames
+  output_dir: outputs/smoke
+
+data:
+  repo_id: lerobot/libero
+  backend: hf
+  stride: 2
+  max_episodes: 8
+  val_ratio: 0.2
+  move_threshold: 0.01
+  lift_threshold: 0.01
+  success_near_frames: 8
+  image_key_candidates:
+    - observation.images.image
+    - observation.images.agentview_rgb
+    - observation.image
+    - image
+
+model:
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  load_in_4bit: true
+  freeze_vision: true
+  max_pixels: 200704
+  lora:
+    r: 8
+    alpha: 16
+    dropout: 0.05
+    target_modules:
+      - q_proj
+      - k_proj
+      - v_proj
+      - o_proj
+
+train:
+  num_epochs: 1
+  batch_size: 1
+  grad_accum: 4
+  learning_rate: 2.0e-4
+  weight_decay: 0.0
+  warmup_ratio: 0.0
+  max_seq_length: 384
+  logging_steps: 5
+  save_steps: 1000
+  eval_steps: 1000
+  gradient_checkpointing: true
+  bf16: true
+  fp16: false
+  dataloader_num_workers: 0
+  resume_from: null
+
+eval:
+  checkpoint: outputs/smoke/checkpoint-final
+  max_samples: 16
+  zero_shot_baseline: false
+
+planner:
+  grid_xy: [-0.05, 0.0, 0.05]
+  dz_values: [0.0]
+  gripper_values: [0.0, 1.0]
+  max_horizon: 1
+  max_candidates: 8
+
+demo:
+  host: 127.0.0.1
+  port: 8501
+  sample_index: 0
