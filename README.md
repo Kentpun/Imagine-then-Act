@@ -42,6 +42,26 @@ python scripts/microduck_send.py forward --duration 3 --dry-run
 
 > Install PyTorch for **your** CUDA version from https://pytorch.org before `requirements.txt` if needed.
 
+## Windows (Part A training)
+
+Open **cmd.exe** in `semantic-world-model` (needs NVIDIA GPU + CUDA PyTorch):
+
+```bat
+scripts\setup_windows.bat
+:: when prompted, install requirements; also install CUDA torch from pytorch.org first
+
+scripts\train_pipeline_windows.bat
+:: low VRAM (16 GB):
+scripts\train_pipeline_windows.bat configs\low_vram.yaml
+
+:: or step-by-step:
+scripts\download_data.bat
+scripts\prepare_dataset.bat
+scripts\train.bat
+scripts\train.bat configs\low_vram.yaml
+scripts\eval.bat
+```
+
 ## What you get
 
 | Module | Path | Role |
