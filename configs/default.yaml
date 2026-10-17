@@ -9,8 +9,9 @@ paths:
 
 data:
   repo_id: lerobot/libero
-  # Use "hf" for Hugging Face datasets API, or "lerobot" if lerobot is installed
+  # "hf" uses local v3 parquet+MP4 decode (recommended). "lerobot" needs the lerobot package.
   backend: hf
+  video_key: observation.images.image
   stride: 5
   max_episodes: null          # set e.g. 200 for a smoke test
   val_ratio: 0.1
@@ -19,6 +20,7 @@ data:
   success_near_frames: 15
   image_key_candidates:
     - observation.images.image
+    - observation.images.image2
     - observation.images.agentview_rgb
     - observation.image
     - image

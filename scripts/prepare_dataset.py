@@ -125,21 +125,49 @@ def build_from_lerobot(cfg: dict[str, Any]) -> tuple[list[dict], list[dict]]:
     return _materialize_rows(cfg, ds)
 
 
+def build_from_local_v3(cfg: dict[str, Any]) -> tuple[list[dict], list[dict]]:
+    """Decode LIBERO v3 parquet + MP4 videos from the local snapshot."""
+    from swm.data.libero_local import LiberoV3FrameDataset
+
+    video_key = cfg["data"].get("video_key", "observation.images.image")
+    ds = LiberoV3FrameDataset(cfg["paths"]["raw_dir"], video_key=video_key)
+    try:
+        return _materialize_rows(cfg, ds)
+    finally:
+        ds.close()
+
+
 def build_from_hf(cfg: dict[str, Any]) -> tuple[list[dict], list[dict]]:
-    """Best-effort loader via datasets + local raw dir."""
-    from datasets import load_dataset
-
-    repo = cfg["data"]["repo_id"]
-    # Streaming can be slow for random access; prefer local snapshot if present.
+    """Prefer local v3 video decode; optional LeRobot; never use image-less parquet-only HF."""
     local = Path(cfg["paths"]["raw_dir"])
-    if (local / "meta").exists() or (local / "data").exists():
-        try:
-            return build_from_lerobot(cfg)
-        except Exception as e:
-            print(f"LeRobot local load failed ({e}); falling back to HF datasets.")
+    has_meta = (local / "meta" / "info.json").is_file() or (local / "meta").is_dir()
+    has_videos = (local / "videos").is_dir()
+    has_data = (local / "data").is_dir()
 
-    ds = load_dataset(repo, split="train")
-    return _materialize_rows(cfg, ds)
+    if has_meta and has_data and has_videos:
+        print(f"Loading local LIBERO v3 with MP4 decode from {local} ...")
+        return build_from_local_v3(cfg)
+
+    if has_meta and has_data and not has_videos:
+        raise FileNotFoundError(
+            f"Found parquet under {local} but no videos/ folder.\n"
+            "Images are stored as MP4 in LeRobot v3 — re-download the full dataset:\n"
+            "  python scripts/download_data.py --repo_id lerobot/libero\n"
+            "Then re-run prepare_dataset."
+        )
+
+    # Try official LeRobot loader (also decodes videos) if installed.
+    try:
+        print("Trying LeRobotDataset ...")
+        return build_from_lerobot(cfg)
+    except Exception as e:
+        print(f"LeRobotDataset unavailable ({e}).")
+
+    raise RuntimeError(
+        "Cannot build LIBERO transitions without camera videos.\n"
+        f"Expected a full local snapshot at {local} with data/, meta/, and videos/.\n"
+        "Run: python scripts/download_data.py --repo_id lerobot/libero"
+    )
 
 
 def _materialize_rows(cfg: dict[str, Any], ds) -> tuple[list[dict], list[dict]]:
@@ -203,7 +231,10 @@ def _materialize_rows(cfg: dict[str, Any], ds) -> tuple[list[dict], list[dict]]:
             img_key = _pick_image_key(ex, candidates)
             if img_key is None:
                 raise KeyError(
-                    f"No image key found. Available keys: {list(ex.keys())[:40]}"
+                    "No image key found. Available keys: "
+                    f"{list(ex.keys())[:40]}\n"
+                    "LIBERO v3 stores cameras as MP4 under videos/ — use the local "
+                    "v3 loader (data+meta+videos) instead of parquet-only HF rows."
                 )
             img = ex[img_key]
             if isinstance(img, dict) and "path" in img:
@@ -216,9 +247,10 @@ def _materialize_rows(cfg: dict[str, Any], ds) -> tuple[list[dict], list[dict]]:
                 if arr.ndim == 3 and arr.shape[0] in (1, 3):
                     arr = np.transpose(arr, (1, 2, 0))
                 if arr.dtype != np.uint8:
-                    arr = np.clip(arr, 0, 255).astype(np.uint8)
-                    if arr.max() <= 1:
-                        arr = (arr * 255).astype(np.uint8)
+                    if arr.max() <= 1.0:
+                        arr = (np.clip(arr, 0, 1) * 255).astype(np.uint8)
+                    else:
+                        arr = np.clip(arr, 0, 255).astype(np.uint8)
                 image = Image.fromarray(arr)
 
             action = ex.get("action")

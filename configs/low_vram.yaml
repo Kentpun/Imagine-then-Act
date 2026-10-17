@@ -11,6 +11,7 @@ paths:
 data:
   repo_id: lerobot/libero
   backend: hf
+  video_key: observation.images.image
   stride: 5
   max_episodes: 400
   val_ratio: 0.1
@@ -19,6 +20,7 @@ data:
   success_near_frames: 15
   image_key_candidates:
     - observation.images.image
+    - observation.images.image2
     - observation.images.agentview_rgb
     - observation.image
     - image

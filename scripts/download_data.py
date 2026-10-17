@@ -32,13 +32,21 @@ def main() -> None:
         return
 
     print(f"Downloading {args.repo_id} -> {out} ...")
+    print("(Includes data/, meta/, and videos/ MP4s — needed for images.)")
     path = snapshot_download(
         repo_id=args.repo_id,
         repo_type="dataset",
         local_dir=str(out),
         local_dir_use_symlinks=False,
     )
+    videos = Path(path) / "videos"
+    if not videos.is_dir():
+        raise RuntimeError(
+            f"Download finished but {videos} is missing. "
+            "Camera frames will not load; delete the folder and re-download."
+        )
     print(f"Done: {path}")
+    print(f"Videos present: {videos}")
 
 
 if __name__ == "__main__":
