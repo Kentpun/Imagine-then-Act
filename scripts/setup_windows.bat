@@ -7,8 +7,7 @@ echo.
 
 where python >nul 2>&1
 if errorlevel 1 (
-  echo ERROR: Python not found. Install Python 3.10+ from https://www.python.org/downloads/
-  echo        and check "Add python.exe to PATH".
+  echo ERROR: Python not found. Install Python 3.10+ and add it to PATH.
   exit /b 1
 )
 
@@ -24,21 +23,18 @@ pip install -e .
 if errorlevel 1 exit /b 1
 
 echo.
-echo IMPORTANT: Install PyTorch for YOUR CUDA version first if training on GPU:
-echo   https://pytorch.org
-echo   Example CUDA 12.1:
-echo   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
-echo.
-echo Then install the rest:
+echo Next: install CUDA PyTorch from https://pytorch.org then run:
 echo   pip install -r requirements.txt
 echo.
-set /p INSTALL_REQ=Install requirements.txt now? [Y/N]: 
-if /I "%INSTALL_REQ%"=="Y" (
+echo Or auto-install requirements.txt now with:
+echo   scripts\setup_windows.bat INSTALL_REQ
+echo.
+
+if /I "%~1"=="INSTALL_REQ" (
+  echo Installing requirements.txt ...
   pip install -r requirements.txt
   if errorlevel 1 exit /b 1
 )
 
-echo.
-echo Done. Activate later with:
-echo   .venv\Scripts\activate.bat
+echo Done. Activate with: .venv\Scripts\activate.bat
 endlocal

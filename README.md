@@ -44,21 +44,31 @@ python scripts/microduck_send.py forward --duration 3 --dry-run
 
 ## Windows (Part A training)
 
-Open **cmd.exe** in `semantic-world-model` (needs NVIDIA GPU + CUDA PyTorch):
+Open **cmd.exe**, `cd` into the `semantic-world-model` folder (needs NVIDIA GPU + CUDA PyTorch).  
+Do **not** paste markdown comments into cmd — only run the `.bat` lines below.
 
 ```bat
-scripts\setup_windows.bat
-:: when prompted, install requirements; also install CUDA torch from pytorch.org first
+scripts\setup_windows.bat INSTALL_REQ
+```
 
+Install CUDA PyTorch from https://pytorch.org into the same venv if the default CPU torch is not enough, then:
+
+```bat
 scripts\train_pipeline_windows.bat
-:: low VRAM (16 GB):
-scripts\train_pipeline_windows.bat configs\low_vram.yaml
+```
 
-:: or step-by-step:
+Low VRAM (16 GB):
+
+```bat
+scripts\train_pipeline_windows.bat configs\low_vram.yaml
+```
+
+Step-by-step:
+
+```bat
 scripts\download_data.bat
 scripts\prepare_dataset.bat
 scripts\train.bat
-scripts\train.bat configs\low_vram.yaml
 scripts\eval.bat
 ```
 
