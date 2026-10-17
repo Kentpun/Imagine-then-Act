@@ -1,0 +1,54 @@
+# Part B — MicroDuck imagination demo (optional; does not replace LIBERO)
+seed: 42
+
+paths:
+  root: .
+  smoke_dir: data/microduck_smoke
+  output_dir: outputs/microduck_demo
+
+model:
+  # Reuse Part A backbone id if scoring with a checkpoint (zero-shot transfer).
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  load_in_4bit: false
+  freeze_vision: true
+  max_pixels: 200704
+  lora:
+    r: 16
+    alpha: 32
+    dropout: 0.05
+    target_modules:
+      - q_proj
+      - k_proj
+      - v_proj
+      - o_proj
+      - gate_proj
+      - up_proj
+      - down_proj
+
+train:
+  bf16: true
+  fp16: false
+  gradient_checkpointing: true
+
+planner:
+  # EMQX demo-legal locomotion: vx in [0, 0.25], vy=0, yaw only with vx>0
+  vx_values: [0.0, 0.1, 0.15, 0.2, 0.25]
+  vy_values: [0.0]
+  yaw_values: [-0.5, -0.25, 0.0, 0.25, 0.5]
+  max_candidates: 24
+
+mqtt:
+  # Point at microduck_demo_part1 .demo/session.env after bootstrap
+  enabled: false
+  dry_run: true
+  session_env: .demo/session.env
+  host: broker.emqx.io
+  port: 1883
+  session_id: null
+  duration_s: 3.0
+  rate_hz: 10.0
+
+demo:
+  host: 127.0.0.1
+  port: 8502
+  browser_sim: https://huggingface.co/spaces/pollen-robotics/microduck-simulator

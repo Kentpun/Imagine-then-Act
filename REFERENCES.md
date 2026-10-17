@@ -57,3 +57,9 @@ Full narrative usage is in `../_00. Ideate/Project_Proposal_Imagine_then_Act.md`
 
 16. Hugging Face LeRobot. Robot learning library / dataset format.  
     https://huggingface.co/docs/lerobot
+
+17. Pollen Robotics. *MicroDuck* — biped robot, docs, and simulator.  
+    https://microduck.homes/docs · Simulator: https://huggingface.co/spaces/pollen-robotics/microduck-simulator · RL: https://github.com/pollen-robotics/microduck_rl
+
+18. JianBo He. *Microduck × Device Agent: Giving the Robot a Cloud-Based Brain (Part 1).* EMQ, 2026.  
+    https://www.emqx.com/en/blog/microduck-and-device-agent-part-1 · MQTT demo: https://github.com/hjianbo/microduck_demo_part1

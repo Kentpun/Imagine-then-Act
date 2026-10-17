@@ -117,24 +117,30 @@ Given \((o_t, g)\):
 ```text
 semantic-world-model/
 ├── TECH_SPEC.md
+├── docs/MICRODUCK_DEMO.md   # Part B optional biped demo
 ├── README.md
 ├── requirements.txt
 ├── pyproject.toml
 ├── configs/
-│   └── default.yaml
+│   ├── default.yaml
+│   └── microduck_demo.yaml
 ├── scripts/
 │   ├── download_data.py
 │   ├── prepare_dataset.py
+│   ├── prepare_microduck_smoke.py
+│   ├── microduck_send.py      # MQTT velocity CLI
 │   ├── train.sh
 │   ├── eval.sh
-│   └── run_demo.sh
+│   ├── run_demo.sh
+│   └── run_microduck_demo.sh
 ├── src/swm/
 │   ├── data/
 │   ├── models/
 │   ├── training/
 │   ├── planning/
 │   ├── eval/
-│   ├── demo/
+│   ├── demo/                # Part A LIBERO Streamlit
+│   ├── microduck/           # Part B planner + MQTT + Streamlit
 │   └── utils/
 ├── data/                 # downloaded + processed (gitignored)
 └── outputs/              # checkpoints + logs
@@ -175,5 +181,22 @@ bash scripts/run_demo.sh
 
 - Pixel video generation
 - Full VLA-JEPA multi-GPU pretraining
-- Real robot deployment
+- Real robot deployment (Franka / MicroDuck hardware)
 - Training on full DROID / Open X-Embodiment
+
+---
+
+## 10. Part B — MicroDuck demo + MQTT control (optional)
+
+Separate stretch track. Does not replace LIBERO metrics. Walking remains the **ONNX policy**; we publish velocity **intents**.
+
+| Mode | What | Command / link |
+| --- | --- | --- |
+| B0 | Browser simulator | https://huggingface.co/spaces/pollen-robotics/microduck-simulator |
+| B1 | Streamlit planner (mock or checkpoint) | `bash scripts/run_microduck_demo.sh --mock` |
+| B1c | MQTT → MuJoCo (`microduck_demo_part1`) | Rank → Execute best / `scripts/microduck_send.py` |
+| B2 | Local sim captures + optional LoRA | See `docs/MICRODUCK_DEMO.md` |
+
+Actions: EMQX-legal `vx∈[0,0.25]`, `vy=0`, `yaw` only with `vx>0`.  
+Labels: `upright; progressed; turned; fell; goal_near`.  
+Module: `src/swm/microduck/mqtt_control.py`.

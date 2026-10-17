@@ -27,8 +27,17 @@ bash scripts/train.sh                 # or: bash scripts/train.sh configs/low_vr
 # Evaluate vs zero-shot baseline
 bash scripts/eval.sh
 
-# Interactive demo
+# Interactive demo (Part A — LIBERO)
 bash scripts/run_demo.sh
+
+# Optional Part B — MicroDuck imagination + MQTT control
+python scripts/prepare_microduck_smoke.py
+bash scripts/run_microduck_demo.sh --mock
+# Teleop dry-run (no broker):
+python scripts/microduck_send.py forward --duration 3 --dry-run
+# Live control: run hjianbo/microduck_demo_part1 simulator, share session.env, then:
+#   python scripts/microduck_send.py forward --duration 3
+# Browser twin: https://huggingface.co/spaces/pollen-robotics/microduck-simulator
 ```
 
 > Install PyTorch for **your** CUDA version from https://pytorch.org before `requirements.txt` if needed.
@@ -41,7 +50,8 @@ bash scripts/run_demo.sh
 | Data prep | `scripts/prepare_dataset.py` | LIBERO → JSONL + frames |
 | Trainer | `src/swm/training/train.py` | Qwen3-VL + LoRA |
 | Planner | `src/swm/planning/imagination_planner.py` | Score / pick actions |
-| Demo | `src/swm/demo/app.py` | Streamlit heatmap UI |
+| Demo (Part A) | `src/swm/demo/app.py` | Streamlit heatmap UI (LIBERO) |
+| Demo (Part B) | `src/swm/microduck/` + `docs/MICRODUCK_DEMO.md` | Imagine velocities + MQTT → MuJoCo sim |
 
 ## Hardware
 
@@ -53,6 +63,7 @@ bash scripts/run_demo.sh
 
 ## Project docs
 
-- Proposal: `../Project_Proposal_Semantic_World_Model.md`
+- Proposal: `../_00. Ideate/Project_Proposal_Imagine_then_Act.md`
 - Spec: `TECH_SPEC.md`
-- Config: `configs/default.yaml`
+- Part B (MicroDuck): `docs/MICRODUCK_DEMO.md`
+- Config: `configs/default.yaml` · `configs/microduck_demo.yaml`

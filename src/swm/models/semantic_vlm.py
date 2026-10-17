@@ -85,9 +85,10 @@ def generate_outcome(
     task: str,
     action: list[float],
     *,
+    prompt: str | None = None,
     max_new_tokens: int = 64,
 ) -> str:
-    prompt = build_prompt(task, action)
+    prompt = prompt if prompt is not None else build_prompt(task, action)
     messages = [
         {
             "role": "user",
