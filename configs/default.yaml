@@ -28,8 +28,8 @@ data:
 model:
   model_id: Qwen/Qwen3-VL-2B-Instruct
   load_in_4bit: false
-  freeze_vision: false
-  max_pixels: 401408          # ~448*448*2; lower to 200704 if OOM
+  freeze_vision: true         # safer VRAM on single GPU
+  max_pixels: 200704          # lower further if first step hangs / OOM
   lora:
     r: 16
     alpha: 32

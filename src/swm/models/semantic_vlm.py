@@ -14,13 +14,30 @@ from transformers import (
 from swm.data.prompts import build_prompt
 
 
+def get_model_device(model: torch.nn.Module) -> torch.device:
+    """Resolve device for models with or without device_map."""
+    try:
+        return next(model.parameters()).device
+    except StopIteration:
+        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
 def build_model_and_processor(cfg: dict[str, Any], *, for_training: bool = True):
     model_cfg = cfg["model"]
     model_id = model_cfg["model_id"]
 
     processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
     if hasattr(processor, "image_processor") and "max_pixels" in model_cfg:
-        processor.image_processor.max_pixels = int(model_cfg["max_pixels"])
+        # Prefer size dict when available (transformers v5+); keep max_pixels fallback.
+        ip = processor.image_processor
+        max_pixels = int(model_cfg["max_pixels"])
+        if hasattr(ip, "size") and isinstance(getattr(ip, "size", None), dict):
+            ip.size = {
+                "longest_edge": max_pixels,
+                "shortest_edge": max(1024, max_pixels // 4),
+            }
+        else:
+            ip.max_pixels = max_pixels
 
     quant_config = None
     if model_cfg.get("load_in_4bit", False):
@@ -34,20 +51,40 @@ def build_model_and_processor(cfg: dict[str, Any], *, for_training: bool = True)
         )
 
     dtype = torch.bfloat16 if cfg["train"].get("bf16", True) else torch.float16
-    model = Qwen3VLForConditionalGeneration.from_pretrained(
-        model_id,
-        quantization_config=quant_config,
-        torch_dtype=dtype if quant_config is None else None,
-        device_map="auto",
-        trust_remote_code=True,
-    )
+    use_cuda = torch.cuda.is_available()
+
+    # Training: avoid device_map="auto" (often hangs / mis-places grads with PEFT on Windows).
+    # 4-bit needs a fixed map onto cuda:0. Full bf16/fp16: load then .to(device).
+    if quant_config is not None:
+        model = Qwen3VLForConditionalGeneration.from_pretrained(
+            model_id,
+            quantization_config=quant_config,
+            device_map={"": 0} if use_cuda else None,
+            trust_remote_code=True,
+        )
+    else:
+        model = Qwen3VLForConditionalGeneration.from_pretrained(
+            model_id,
+            torch_dtype=dtype,
+            trust_remote_code=True,
+        )
+        if use_cuda:
+            model = model.to("cuda")
+        else:
+            model = model.to("cpu")
 
     if for_training:
+        # Must disable KV cache before gradient checkpointing.
+        if hasattr(model, "config"):
+            model.config.use_cache = False
         if quant_config is not None:
             model = prepare_model_for_kbit_training(model)
         if cfg["train"].get("gradient_checkpointing", True):
             model.gradient_checkpointing_enable()
-            model.config.use_cache = False
+            if hasattr(model, "enable_input_require_grads"):
+                model.enable_input_require_grads()
+            if hasattr(model, "config"):
+                model.config.use_cache = False
 
         if model_cfg.get("freeze_vision", False):
             for name, param in model.named_parameters():
@@ -105,7 +142,8 @@ def generate_outcome(
         return_dict=True,
         return_tensors="pt",
     )
-    inputs = inputs.to(model.device)
+    device = get_model_device(model)
+    inputs = inputs.to(device)
     out = model.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=False)
     trimmed = [o[len(i) :] for i, o in zip(inputs["input_ids"], out)]
     return processor.batch_decode(
