@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import torch
@@ -22,6 +23,18 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
+def _dataloader_workers(cfg: dict) -> int:
+    """Windows spawn + nested collate_fn often hits EOFError with workers > 0."""
+    n = int(cfg["train"].get("dataloader_num_workers", 0))
+    if sys.platform.startswith("win") and n > 0:
+        print(
+            f"Windows detected: forcing dataloader_num_workers=0 "
+            f"(config had {n}) to avoid multiprocessing EOFError."
+        )
+        return 0
+    return n
+
+
 def main() -> None:
     args = parse_args()
     cfg = load_config(args.config)
@@ -31,8 +44,18 @@ def main() -> None:
     frames = Path(cfg["paths"]["frames_dir"])
     out_dir = ensure_dir(cfg["paths"]["output_dir"])
 
-    train_ds = SemanticTransitionDataset(processed / "train.jsonl", frames)
-    val_ds = SemanticTransitionDataset(processed / "val.jsonl", frames)
+    train_path = processed / "train.jsonl"
+    val_path = processed / "val.jsonl"
+    if not train_path.is_file() or train_path.stat().st_size == 0:
+        raise SystemExit(
+            f"Missing/empty {train_path}. Run scripts/prepare_dataset.py first."
+        )
+
+    train_ds = SemanticTransitionDataset(train_path, frames)
+    if val_path.is_file() and val_path.stat().st_size > 0:
+        val_ds = SemanticTransitionDataset(val_path, frames)
+    else:
+        val_ds = train_ds
     if len(train_ds) == 0:
         raise SystemExit(
             "No training rows found. Run scripts/prepare_dataset.py first."
@@ -40,13 +63,15 @@ def main() -> None:
 
     model, processor = build_model_and_processor(cfg, for_training=True)
     collate = make_collate_fn(processor, max_length=int(cfg["train"]["max_seq_length"]))
+    num_workers = _dataloader_workers(cfg)
 
     train_loader = DataLoader(
         train_ds,
         batch_size=int(cfg["train"]["batch_size"]),
         shuffle=True,
-        num_workers=int(cfg["train"].get("dataloader_num_workers", 0)),
+        num_workers=num_workers,
         collate_fn=collate,
+        persistent_workers=False,
     )
     val_loader = DataLoader(
         val_ds,

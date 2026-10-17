@@ -57,7 +57,7 @@ train:
   gradient_checkpointing: true
   bf16: true                  # set false + fp16 true on T4
   fp16: false
-  dataloader_num_workers: 2
+  dataloader_num_workers: 0   # keep 0 on Windows; Linux may use 2+
   resume_from: null
 
 eval:

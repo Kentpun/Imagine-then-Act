@@ -57,7 +57,7 @@ train:
   gradient_checkpointing: true
   bf16: false
   fp16: true
-  dataloader_num_workers: 2
+  dataloader_num_workers: 0
   resume_from: null
 
 eval:
