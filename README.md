@@ -57,16 +57,22 @@ Install CUDA PyTorch from https://pytorch.org into the same venv if the default 
 scripts\train_pipeline_windows.bat
 ```
 
-If training sticks at `epoch 1: 0%`, stop it (Ctrl+C), sync latest code, then smoke-train:
+Smoke-train (sanity check):
 
 ```bat
 scripts\train.bat configs\windows_quick.yaml
 ```
 
-Low VRAM full-ish run (16 GB):
+**8 GB VRAM** (use this — `low_vram.yaml` needs ~16 GB):
 
 ```bat
-scripts\train_pipeline_windows.bat configs\low_vram.yaml
+scripts\train.bat configs\8gb.yaml
+```
+
+16 GB VRAM:
+
+```bat
+scripts\train.bat configs\low_vram.yaml
 ```
 
 Step-by-step:

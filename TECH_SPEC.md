@@ -170,10 +170,11 @@ bash scripts/run_demo.sh
 ```
 
 **VRAM tips if OOM**
-1. Set `model.load_in_4bit: true`
-2. Set `model.freeze_vision: true`
-3. Lower `model.max_pixels` (e.g. `200704`)
-4. `train.batch_size: 1`, raise `grad_accum`
+1. Use `configs/8gb.yaml` on 8 GB GPUs (`low_vram.yaml` targets ~16 GB)
+2. Set `model.load_in_4bit: true`
+3. Set `model.freeze_vision: true`
+4. Lower `model.max_pixels` (e.g. `50176` or `100352`)
+5. `train.batch_size: 1`, raise `grad_accum`; optionally set `train.max_train_samples`
 
 ---
 

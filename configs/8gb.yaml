@@ -1,0 +1,74 @@
+# Single GPU with ~8 GB VRAM (e.g. laptop 4060/3070 8GB).
+# QLoRA 4-bit + tiny vision tokens. Use this instead of low_vram.yaml (16 GB).
+seed: 42
+
+paths:
+  root: .
+  raw_dir: data/raw/libero
+  processed_dir: data/processed
+  frames_dir: data/processed/frames
+  output_dir: outputs/8gb
+
+data:
+  repo_id: lerobot/libero
+  backend: hf
+  video_key: observation.images.image
+  stride: 5
+  max_episodes: 200          # only used when re-running prepare_dataset
+  val_ratio: 0.1
+  move_threshold: 0.01
+  lift_threshold: 0.01
+  success_near_frames: 15
+  image_key_candidates:
+    - observation.images.image
+    - observation.images.image2
+    - observation.image
+    - image
+
+model:
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  load_in_4bit: true
+  freeze_vision: true
+  max_pixels: 50176            # ~158^2 * 2 — critical for 8 GB
+  lora:
+    r: 4
+    alpha: 8
+    dropout: 0.05
+    target_modules:
+      - q_proj
+      - v_proj
+
+train:
+  num_epochs: 1
+  batch_size: 1
+  grad_accum: 16               # effective batch ~16
+  learning_rate: 2.0e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.03
+  max_seq_length: 192
+  max_train_samples: 1500      # course-scale; set null for full jsonl (slow)
+  logging_steps: 20
+  save_steps: 250
+  eval_steps: 250
+  gradient_checkpointing: true
+  bf16: false
+  fp16: true
+  dataloader_num_workers: 0
+  resume_from: null
+
+eval:
+  checkpoint: outputs/8gb/checkpoint-final
+  max_samples: 128
+  zero_shot_baseline: true
+
+planner:
+  grid_xy: [-0.05, 0.0, 0.05]
+  dz_values: [0.0]
+  gripper_values: [0.0, 1.0]
+  max_horizon: 1
+  max_candidates: 8
+
+demo:
+  host: 127.0.0.1
+  port: 8501
+  sample_index: 0

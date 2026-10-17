@@ -1,0 +1,73 @@
+# Ultra-light Windows smoke: prove forward+backward finish in minutes.
+seed: 42
+
+paths:
+  root: .
+  raw_dir: data/raw/libero
+  processed_dir: data/processed
+  frames_dir: data/processed/frames
+  output_dir: outputs/windows_micro
+
+data:
+  repo_id: lerobot/libero
+  backend: hf
+  video_key: observation.images.image
+  stride: 5
+  max_episodes: 20
+  val_ratio: 0.1
+  move_threshold: 0.01
+  lift_threshold: 0.01
+  success_near_frames: 15
+  image_key_candidates:
+    - observation.images.image
+    - observation.image
+    - image
+
+model:
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  load_in_4bit: true
+  freeze_vision: true
+  max_pixels: 50176           # ~158*158*2 — tiny vision tokens
+  lora:
+    r: 4
+    alpha: 8
+    dropout: 0.0
+    # Fewer LoRA mats = less time in grad_A = torch.matmul
+    target_modules:
+      - q_proj
+      - v_proj
+
+train:
+  num_epochs: 1
+  batch_size: 1
+  grad_accum: 1
+  learning_rate: 2.0e-4
+  weight_decay: 0.0
+  warmup_ratio: 0.0
+  max_seq_length: 128
+  max_train_samples: 8
+  logging_steps: 1
+  save_steps: 8
+  eval_steps: 1000
+  gradient_checkpointing: true
+  bf16: false
+  fp16: true
+  dataloader_num_workers: 0
+  resume_from: null
+
+eval:
+  checkpoint: outputs/windows_micro/checkpoint-final
+  max_samples: 8
+  zero_shot_baseline: false
+
+planner:
+  grid_xy: [0.0, 0.05]
+  dz_values: [0.0]
+  gripper_values: [1.0]
+  max_horizon: 1
+  max_candidates: 4
+
+demo:
+  host: 127.0.0.1
+  port: 8501
+  sample_index: 0
