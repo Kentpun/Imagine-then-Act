@@ -1,0 +1,22 @@
+{
+  "zero_shot": {
+    "exact_match": 0.388671875,
+    "parse_rate": 1.0,
+    "n": 512,
+    "format_hint": true,
+    "acc_moved": 0.654296875,
+    "acc_lifted": 0.958984375,
+    "acc_gripper": 0.9921875,
+    "acc_progress": 0.734375,
+    "acc_success_near": 0.916015625
+  },
+  "finetuned": {
+    "exact_match": 0.91796875,
+    "n": 512,
+    "acc_moved": 1.0,
+    "acc_lifted": 0.9921875,
+    "acc_gripper": 1.0,
+    "acc_progress": 0.939453125,
+    "acc_success_near": 0.98046875
+  }
+}
