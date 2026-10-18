@@ -59,6 +59,7 @@ def test_circle_instruction_holds_inside_and_pushes_outside():
 
     assert parse_circle_instruction("push_in") == "push_in"
     assert parse_circle_instruction("The ball should hold still") == "hold"
+    assert parse_circle_instruction("moved=yes; lifted=no") is None
 
     sys_path = Path(__file__).resolve().parents[2] / "microduck_demo_part1" / "src"
     import sys

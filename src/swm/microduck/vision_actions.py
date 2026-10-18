@@ -58,12 +58,14 @@ Ignore the robot. Do not say anything else.
 """
 
 
-def parse_circle_instruction(text: str) -> str:
-    """Return hold or push_in from a model reply."""
+def parse_circle_instruction(text: str) -> str | None:
+    """Return hold or push_in only when the model actually said that word."""
     lowered = text.lower()
-    if "push_in" in lowered or "push" in lowered:
+    if "push_in" in lowered:
         return "push_in"
-    return "hold"
+    if re.search(r"\bhold\b", lowered):
+        return "hold"
+    return None
 
 
 def parse_vision_action(text: str) -> str:
