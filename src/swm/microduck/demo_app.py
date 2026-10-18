@@ -163,10 +163,13 @@ def main() -> None:
         f"Docs: [{DOCS}]({DOCS})"
     )
 
-    default_mock = os.environ.get("SWM_MICRODUCK_MOCK", "1") != "0"
     default_ckpt = os.environ.get(
-        "SWM_MICRODUCK_CHECKPOINT", "outputs/run001/checkpoint-final"
+        "SWM_MICRODUCK_CHECKPOINT", "outputs/superpod/checkpoint-final"
     )
+    if "SWM_MICRODUCK_MOCK" in os.environ:
+        default_mock = os.environ["SWM_MICRODUCK_MOCK"] != "0"
+    else:
+        default_mock = not Path(default_ckpt).exists()
 
     config_path = st.sidebar.text_input("Config", "configs/microduck_demo.yaml")
     mock = st.sidebar.toggle("Mock world model (no GPU)", value=default_mock)

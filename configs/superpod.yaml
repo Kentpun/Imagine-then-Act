@@ -1,0 +1,80 @@
+# HKUST SuperPOD: 1x NVIDIA H800 (80 GB) on partition "normal".
+# One GPU comes with ~14 CPU cores and 224 GB RAM (do not request --mem).
+seed: 42
+
+paths:
+  root: .
+  raw_dir: data/raw/libero
+  processed_dir: data/processed
+  frames_dir: data/processed/frames
+  output_dir: outputs/superpod
+
+data:
+  repo_id: lerobot/libero
+  backend: hf
+  video_key: observation.images.image
+  stride: 5
+  max_episodes: null
+  val_ratio: 0.1
+  move_threshold: 0.01
+  lift_threshold: 0.01
+  success_near_frames: 15
+  image_key_candidates:
+    - observation.images.image
+    - observation.images.image2
+    - observation.images.agentview_rgb
+    - observation.image
+    - image
+
+model:
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  load_in_4bit: false          # H800 80 GB fits bf16 LoRA
+  freeze_vision: false
+  max_pixels: 401408
+  lora:
+    r: 16
+    alpha: 32
+    dropout: 0.05
+    target_modules:
+      - q_proj
+      - k_proj
+      - v_proj
+      - o_proj
+      - gate_proj
+      - up_proj
+      - down_proj
+
+train:
+  num_epochs: 2
+  batch_size: 2
+  grad_accum: 8
+  learning_rate: 2.0e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.03
+  max_seq_length: 512
+  max_train_samples: null
+  logging_steps: 20
+  save_steps: 500
+  eval_steps: 500
+  gradient_checkpointing: true
+  bf16: true
+  fp16: false
+  dataloader_num_workers: 8
+  resume_from: null
+
+eval:
+  checkpoint: outputs/superpod/checkpoint-final
+  max_samples: 512
+  zero_shot_baseline: true
+
+planner:
+  grid_xy: [-0.05, -0.025, 0.0, 0.025, 0.05]
+  dz_values: [0.0, 0.02]
+  gripper_values: [0.0, 1.0]
+  max_horizon: 1
+  max_candidates: 16
+
+demo:
+  host: 127.0.0.1
+  port: 8501
+  sample_index: 0

@@ -6,7 +6,6 @@ from typing import Any
 from PIL import Image
 
 from swm.microduck.labeling import mock_outcome, score_from_outcome
-from swm.microduck.prompts import build_prompt
 
 
 def candidate_actions(cfg: dict[str, Any]) -> list[list[float]]:
@@ -56,15 +55,24 @@ class MicroDuckImaginationPlanner:
     def _predict(self, image: Image.Image, task: str, action: list[float]) -> str:
         if self.mock:
             return mock_outcome(action, task)
+        from swm.data.prompts import build_prompt as libero_prompt
         from swm.models.semantic_vlm import generate_outcome
 
+        # The SuperPOD LoRA was trained on delta_xyz prompts. Map vx→dx, yaw→dy.
+        vx = float(action[0]) if action else 0.0
+        yaw = float(action[2]) if len(action) > 2 else 0.0
+        libero_action = [vx, yaw, 0.0, 0.0, 0.0, 0.0, 0.0]
+        prompt = libero_prompt(
+            f"{task.strip()} (locomotion vx={vx:.2f}, yaw={yaw:.2f})",
+            libero_action,
+        )
         return generate_outcome(
             self.model,
             self.processor,
             image,
             task,
-            action,
-            prompt=build_prompt(task, action),
+            libero_action,
+            prompt=prompt,
         )
 
     def rank(

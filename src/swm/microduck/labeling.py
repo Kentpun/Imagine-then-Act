@@ -55,7 +55,11 @@ def build_outcome_string(labels: dict[str, str]) -> str:
 
 
 def score_from_outcome(outcome: str) -> float:
-    """Map a biped outcome string to a scalar for planning."""
+    """Map a predicted outcome string to a scalar for planning.
+
+    Accepts MicroDuck labels and the LIBERO LoRA schema
+    (moved / progress / success_near), so a Part A checkpoint can rank velocities.
+    """
     text = outcome.lower().replace(" ", "")
     score = 0.0
     if "progressed=yes" in text:
@@ -68,6 +72,17 @@ def score_from_outcome(outcome: str) -> float:
         score += 0.5
     if "goal_near=yes" in text:
         score += 3.0
+    # LIBERO-trained checkpoint emits this schema.
+    if "moved=yes" in text:
+        score += 1.5
+    if "progress=up" in text:
+        score += 2.0
+    if "progress=down" in text:
+        score -= 1.0
+    if "success_near=yes" in text:
+        score += 2.0
+    if "lifted=yes" in text:
+        score += 0.25
     return score
 
 

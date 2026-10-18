@@ -75,6 +75,17 @@ scripts\train.bat configs\8gb.yaml
 scripts\train.bat configs\low_vram.yaml
 ```
 
+## HKUST SuperPOD (H800 80 GB)
+
+Login nodes have no GPU. Edit `--account` in `scripts/superpod_train.sbatch`, then on a login node:
+
+```bash
+sbatch scripts/superpod_train.sbatch
+squeue -u "$USER"
+```
+
+Partition `normal`, 1× H800 ([ITSO SuperPOD](https://itso.hkust.edu.hk/services/academic-teaching-support/high-performance-computing/superpod)). Config: `configs/superpod.yaml`.
+
 Step-by-step:
 
 ```bat

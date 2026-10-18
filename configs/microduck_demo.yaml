@@ -7,8 +7,9 @@ paths:
   output_dir: outputs/microduck_demo
 
 model:
-  # Reuse Part A backbone id if scoring with a checkpoint (zero-shot transfer).
+  # Part A LoRA lives in outputs/superpod/checkpoint-final (bf16, not 4-bit).
   model_id: Qwen/Qwen3-VL-2B-Instruct
+  checkpoint: outputs/superpod/checkpoint-final
   load_in_4bit: false
   freeze_vision: true
   max_pixels: 200704

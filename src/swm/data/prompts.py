@@ -16,10 +16,21 @@ def format_action(action: Sequence[float]) -> str:
     return ACTION_TEMPLATE.format(dx=dx, dy=dy, dz=dz, gripper=gripper)
 
 
-def build_prompt(task: str, action: Sequence[float]) -> str:
-    return (
+FORMAT_HINT = (
+    "Reply with exactly one line and no other text.\n"
+    "Format: moved=<yes|no>; lifted=<yes|no>; gripper=<open|close|hold>; "
+    "progress=<up|flat|down>; success_near=<yes|no>\n"
+    "Syntax example only (do not copy these values): "
+    "moved=yes; lifted=no; gripper=close; progress=flat; success_near=no\n"
+)
+
+
+def build_prompt(task: str, action: Sequence[float], *, format_hint: bool = False) -> str:
+    body = (
         f"Task: {task.strip()}\n"
         f"{format_action(action)}\n"
         "Predict the semantic outcome after this action.\n"
-        "Answer:"
     )
+    if format_hint:
+        body += FORMAT_HINT
+    return body + "Answer:"
