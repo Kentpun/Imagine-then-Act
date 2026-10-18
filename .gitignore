@@ -11,7 +11,7 @@ data/processed/
 # outputs/
 *.pt
 *.bin
-*.safetensors
+# *.safetensors
 wandb/
 .hf_cache/
 *.egg-info/
