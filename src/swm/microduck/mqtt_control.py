@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 import time
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
@@ -31,8 +33,8 @@ DEFAULT_RATE_HZ = 10.0
 
 PRESETS: dict[str, dict[str, float]] = {
     "forward": {"vx": 0.25, "vy": 0.0, "yaw": 0.0},
-    "forward-left": {"vx": 0.2, "vy": 0.0, "yaw": 0.5},
-    "forward-right": {"vx": 0.2, "vy": 0.0, "yaw": -0.5},
+    "forward-left": {"vx": 0.25, "vy": 0.0, "yaw": 0.5},
+    "forward-right": {"vx": 0.25, "vy": 0.0, "yaw": -0.5},
     "stop": {"vx": 0.0, "vy": 0.0, "yaw": 0.0},
 }
 
@@ -92,10 +94,21 @@ def resolve_session(
         session_id
         or env.get("SESSION_ID")
         or env.get("MQTT_SESSION_ID")
+        or env.get("MICRODUCK_SESSION_ID")
         or "local"
     )
-    h = host or env.get("MQTT_HOST") or env.get("MQTT_BROKER") or DEFAULT_BROKER
-    p_raw = port if port is not None else env.get("MQTT_PORT")
+    h = (
+        host
+        or env.get("MQTT_HOST")
+        or env.get("MQTT_BROKER")
+        or env.get("MICRODUCK_BROKER_HOST")
+        or DEFAULT_BROKER
+    )
+    p_raw = (
+        port
+        if port is not None
+        else env.get("MQTT_PORT") or env.get("MICRODUCK_BROKER_PORT")
+    )
     p = int(p_raw) if p_raw is not None else DEFAULT_PORT
     user = username if username is not None else env.get("MQTT_USERNAME")
     pwd = password if password is not None else env.get("MQTT_PASSWORD")
@@ -154,6 +167,7 @@ class MqttVelocityClient:
         self.dry_run = dry_run
         self.on_publish = on_publish
         self._client: Any = None
+        self._seq = 0
 
     @property
     def topic(self) -> str:
@@ -164,20 +178,43 @@ class MqttVelocityClient:
             return
         import paho.mqtt.client as mqtt
 
-        client_id = f"swm-microduck-{self.session.session_id}"
-        # paho-mqtt 2.x requires CallbackAPIVersion; 1.x uses positional client_id.
+        # Match microduck_demo_part1: MQTT v5, unique client id, wait until connected.
+        # Publishing before CONNACK drops the messages, so the duck never moves.
+        client_id = f"swm-microduck-{self.session.session_id}-{uuid.uuid4().hex[:8]}"
+        connected = threading.Event()
+        failed: list[str] = []
+
+        def on_connect(client, userdata, flags, reason_code, properties=None):  # noqa: ANN001
+            code = getattr(reason_code, "value", reason_code)
+            if int(code) == 0:
+                connected.set()
+            else:
+                failed.append(str(reason_code))
+                connected.set()
+
         try:
             self._client = mqtt.Client(
-                mqtt.CallbackAPIVersion.VERSION2, client_id=client_id
+                callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
+                client_id=client_id,
+                protocol=mqtt.MQTTv5,
             )
         except (AttributeError, TypeError):
             self._client = mqtt.Client(client_id=client_id)
+        self._client.on_connect = on_connect
         if self.session.username:
             self._client.username_pw_set(
                 self.session.username, self.session.password or ""
             )
         self._client.connect(self.session.host, self.session.port, keepalive=60)
         self._client.loop_start()
+        if not connected.wait(10):
+            self.disconnect()
+            raise TimeoutError(
+                f"MQTT connection to {self.session.host}:{self.session.port} timed out"
+            )
+        if failed:
+            self.disconnect()
+            raise ConnectionError(f"MQTT connection rejected: {failed[0]}")
 
     def disconnect(self) -> None:
         if self._client is None:
@@ -194,7 +231,12 @@ class MqttVelocityClient:
         self.disconnect()
 
     def publish_velocity(
-        self, vx: float, vy: float = 0.0, yaw: float = 0.0
+        self,
+        vx: float,
+        vy: float = 0.0,
+        yaw: float = 0.0,
+        kick: str | None = None,
+        instruction: str | None = None,
     ) -> dict[str, float]:
         payload = velocity_payload(vx, vy, yaw)
         if self.on_publish is not None:
@@ -203,7 +245,16 @@ class MqttVelocityClient:
             return payload
         if self._client is None:
             raise RuntimeError("MQTT client not connected; call connect() first")
-        body = json.dumps(payload)
+        wire = {**payload, "seq": self._seq, "ts": int(time.time() * 1000)}
+        if kick in ("left", "right"):
+            wire["kick"] = kick
+        if instruction in ("hold", "push_in"):
+            wire["instruction"] = instruction
+        body = json.dumps(
+            wire,
+            separators=(",", ":"),
+        )
+        self._seq += 1
         info = self._client.publish(self.topic, body, qos=0, retain=False)
         info.wait_for_publish(timeout=5.0)
         return payload

@@ -18,6 +18,7 @@ from swm.utils.config import load_config
 from swm.utils.io import load_jsonl
 
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
 BROWSER_SIM = "https://huggingface.co/spaces/pollen-robotics/microduck-simulator"
 DOCS = "https://microduck.homes/docs"
 DEMO_REPO = "https://github.com/hjianbo/microduck_demo_part1"
@@ -49,16 +50,21 @@ def _mqtt_sidebar(cfg: dict) -> dict:
     st.sidebar.subheader("MQTT control")
     enabled = st.sidebar.toggle(
         "Enable MQTT publish",
-        value=bool(mqtt_cfg.get("enabled", False)),
+        value=bool(mqtt_cfg.get("enabled", True)),
+        key="mqtt_publish_on",
     )
     dry_run = st.sidebar.toggle(
-        "Dry-run (log only)",
-        value=bool(mqtt_cfg.get("dry_run", True)),
+        "Dry-run (log only, duck will not move)",
+        value=bool(mqtt_cfg.get("dry_run", False)),
         disabled=not enabled,
+        key="mqtt_dry_run",
     )
+    session_raw = Path(str(mqtt_cfg.get("session_env") or ".demo/session.env"))
+    if not session_raw.is_absolute():
+        session_raw = REPO_ROOT / session_raw
     session_env = st.sidebar.text_input(
         "session.env path",
-        value=str(mqtt_cfg.get("session_env") or ".demo/session.env"),
+        value=str(session_raw),
     )
     host = st.sidebar.text_input(
         "Broker host", value=str(mqtt_cfg.get("host") or "broker.emqx.io")
@@ -93,6 +99,16 @@ def _mqtt_sidebar(cfg: dict) -> dict:
             step=1.0,
         )
     )
+    preview = resolve_session(
+        session_env=session_env,
+        host=host,
+        port=port,
+        session_id=session_id or None,
+    )
+    if dry_run or not enabled:
+        st.sidebar.error("Dry-run or MQTT off. The simulator will not move.")
+    else:
+        st.sidebar.success(f"Live topic `{preview.topic}`")
     return {
         "enabled": enabled,
         "dry_run": dry_run if enabled else True,
@@ -121,8 +137,11 @@ def _make_client(mqtt_ui: dict) -> MqttVelocityClient:
 def _execute_velocity(
     mqtt_ui: dict, vx: float, vy: float, yaw: float, *, label: str
 ) -> None:
-    if not mqtt_ui["enabled"] and not mqtt_ui["dry_run"]:
-        st.warning("Enable MQTT or dry-run to publish.")
+    if not mqtt_ui["enabled"] or mqtt_ui["dry_run"]:
+        st.error(
+            "Nothing was sent. Turn on Enable MQTT publish and turn Dry-run off. "
+            "Ranking a command does not move the duck."
+        )
         return
     client = _make_client(mqtt_ui)
     try:
@@ -184,7 +203,8 @@ def main() -> None:
             st.stop()
         cfg, planner = load_vlm_planner(config_path, checkpoint)
         st.sidebar.warning(
-            "Using Part A weights zero-shot on MicroDuck prompts — expect weak semantics."
+            "Part A LoRA ranks velocities by imagining LIBERO-style outcomes. "
+            "The ONNX gait still walks the duck."
         )
 
     mqtt_ui = _mqtt_sidebar(cfg)
@@ -229,7 +249,7 @@ def main() -> None:
     col1, col2 = st.columns([1, 1])
     with col1:
         st.subheader("Observation (smoke / capture)")
-        st.image(image, use_container_width=True)
+        st.image(image, use_column_width=True)
         st.code(row.get("outcome", ""), language="text")
 
     with col2:

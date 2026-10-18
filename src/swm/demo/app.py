@@ -57,7 +57,7 @@ def main() -> None:
     col1, col2 = st.columns([1, 1])
     with col1:
         st.subheader("Observation")
-        st.image(sample["image"], use_container_width=True)
+        st.image(sample["image"], use_column_width=True)
 
     with col2:
         st.subheader("Ranked candidate actions")

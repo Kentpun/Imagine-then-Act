@@ -30,14 +30,15 @@ bash scripts/eval.sh
 # Interactive demo (Part A — LIBERO)
 bash scripts/run_demo.sh
 
-# Optional Part B — MicroDuck imagination + MQTT control
-python scripts/prepare_microduck_smoke.py
-bash scripts/run_microduck_demo.sh --mock
-# Teleop dry-run (no broker):
-python scripts/microduck_send.py forward --duration 3 --dry-run
-# Live control: run hjianbo/microduck_demo_part1 simulator, share session.env, then:
-#   python scripts/microduck_send.py forward --duration 3
-# Browser twin: https://huggingface.co/spaces/pollen-robotics/microduck-simulator
+# Optional Part B — LoRA picks a velocity; the simulator walks the duck.
+# How it works: docs/MICRODUCK_DEMO.md
+bash scripts/setup_microduck_sim.sh
+# Terminal 1: cd ../microduck_demo_part1 && ./scripts/run_simulator.sh
+# Terminal 2:
+bash scripts/run_microduck_demo.sh --checkpoint outputs/superpod/checkpoint-final
+# Camera loop (orange ball + blue box, head camera -> walk command):
+#   Terminal 1: cd ../microduck_demo_part1 && ./scripts/run_simulator.sh --vision-ball
+#   Terminal 2: bash scripts/run_microduck_vision.sh
 ```
 
 > Install PyTorch for **your** CUDA version from https://pytorch.org before `requirements.txt` if needed.

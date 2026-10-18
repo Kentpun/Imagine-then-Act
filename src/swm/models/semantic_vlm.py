@@ -123,10 +123,16 @@ def generate_outcome(
     action: list[float],
     *,
     prompt: str | None = None,
+    system: str | None = None,
     max_new_tokens: int = 64,
 ) -> str:
     prompt = prompt if prompt is not None else build_prompt(task, action)
-    messages = [
+    messages = []
+    if system:
+        messages.append(
+            {"role": "system", "content": [{"type": "text", "text": system}]}
+        )
+    messages.append(
         {
             "role": "user",
             "content": [
@@ -134,7 +140,7 @@ def generate_outcome(
                 {"type": "text", "text": prompt},
             ],
         }
-    ]
+    )
     inputs = processor.apply_chat_template(
         messages,
         tokenize=True,
