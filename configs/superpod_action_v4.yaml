@@ -1,0 +1,84 @@
+# v4: continue from v3 with Language Table + BridgeData V2.
+# Bridge raw videos live on project storage (home is nearly full).
+seed: 42
+
+paths:
+  root: .
+  raw_dir: data/raw/action
+  # Frames/jsonl on project storage so home quota is not blown.
+  processed_dir: /project/mscbdtsuperpod/kkpun/swm_data/processed_action_v4
+  frames_dir: /project/mscbdtsuperpod/kkpun/swm_data/processed_action_v4/frames
+  output_dir: outputs/superpod_action_v4
+
+data:
+  val_ratio: 0.1
+  max_rows: 50000
+  translation_threshold: 0.003
+  collapse_magnitude: true
+  sources:
+    - name: language_table
+      enabled: true
+      repo_id: mateoguaman/language_table
+      root: data/raw/language_table
+      image_key: observation.images.rgb
+      max_episodes: 4000
+      frames_per_episode: 6
+
+    # Full Bridge package is ~90 GB. LeRobot only downloads the selected
+    # episode videos into this project-storage root.
+    - name: bridge
+      enabled: true
+      repo_id: nvidia/BridgeData2_LeRobot_v3
+      root: /project/mscbdtsuperpod/kkpun/swm_data/raw/bridge
+      image_key: observation.images.image_0
+      max_episodes: 1200
+      frames_per_episode: 6
+
+    - name: libero
+      enabled: false
+      repo_id: lerobot/libero
+      root: data/raw/libero_action
+      image_key: observation.images.image
+      max_episodes: 1200
+      frames_per_episode: 6
+
+model:
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  load_in_4bit: false
+  freeze_vision: false
+  max_pixels: 401408
+  lora:
+    r: 16
+    alpha: 32
+    dropout: 0.05
+    target_modules:
+      - q_proj
+      - k_proj
+      - v_proj
+      - o_proj
+      - gate_proj
+      - up_proj
+      - down_proj
+
+train:
+  num_epochs: 2
+  batch_size: 2
+  grad_accum: 8
+  learning_rate: 5.0e-5
+  weight_decay: 0.01
+  warmup_ratio: 0.03
+  max_seq_length: 512
+  max_train_samples: null
+  logging_steps: 20
+  save_steps: 1000
+  eval_steps: 1000
+  gradient_checkpointing: true
+  bf16: true
+  fp16: false
+  dataloader_num_workers: 8
+  resume_from: outputs/superpod_action_v3/checkpoint-final
+
+eval:
+  checkpoint: outputs/superpod_action_v4/checkpoint-final
+  max_samples: 512
+  zero_shot_baseline: false

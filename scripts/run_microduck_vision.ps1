@@ -1,4 +1,4 @@
-# Load the Qwen3-VL-2B LoRA and publish hold / push_in for the MicroDuck simulator.
+# Load the Qwen3-VL-2B general action LoRA and publish its generic action command.
 #
 # The simulator can stay on the Mac. On the Mac, start it with:
 #   MICRODUCK_SKIP_VLM=1 ./scripts/run_simulator.sh --vision-ball
@@ -29,7 +29,7 @@ if (-not $SessionEnv) {
     else { $SessionEnv = $localSession }
 }
 if (-not $Checkpoint) {
-    $Checkpoint = Join-Path $RepoRoot "outputs\superpod\checkpoint-final"
+    $Checkpoint = Join-Path $RepoRoot "outputs\superpod_action\checkpoint-final"
 }
 
 foreach ($path in @($SessionEnv, $Checkpoint)) {
@@ -72,7 +72,7 @@ $env:PYTHONPATH = "$(Join-Path $RepoRoot 'src');$env:PYTHONPATH"
 Write-Host "Qwen3-VL-2B LoRA checkpoint: $Checkpoint"
 Write-Host "MQTT session: $SessionEnv"
 Write-Host "Overhead frame: $Frame"
-Write-Host "The duck stands until the first hold or push_in reply."
+Write-Host "The duck stands until the first generic action command is converted by MicroDuck."
 
 & $pythonExe @pythonPrefix -m swm.microduck.vision_loop `
     --frame $Frame `

@@ -1,0 +1,82 @@
+# Continue v2 with a longer fine-tune at lower LR.
+# Same cleaned Language Table labels; no dataset rebuild required.
+seed: 42
+
+paths:
+  root: .
+  raw_dir: data/raw/action
+  processed_dir: data/processed_action_v2
+  frames_dir: data/processed_action_v2/frames
+  output_dir: outputs/superpod_action_v3
+
+data:
+  val_ratio: 0.1
+  max_rows: 50000
+  translation_threshold: 0.003
+  collapse_magnitude: true
+  sources:
+    - name: language_table
+      enabled: true
+      repo_id: mateoguaman/language_table
+      root: data/raw/language_table
+      image_key: observation.images.rgb
+      max_episodes: 5000
+      frames_per_episode: 8
+
+    - name: bridge
+      enabled: false
+      repo_id: nvidia/BridgeData2_LeRobot_v3
+      root: data/raw/bridge
+      image_key: observation.images.image_0
+      max_episodes: 1500
+      frames_per_episode: 6
+
+    - name: libero
+      enabled: false
+      repo_id: lerobot/libero
+      root: data/raw/libero_action
+      image_key: observation.images.image
+      max_episodes: 1200
+      frames_per_episode: 6
+
+model:
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  load_in_4bit: false
+  freeze_vision: false
+  max_pixels: 401408
+  lora:
+    r: 16
+    alpha: 32
+    dropout: 0.05
+    target_modules:
+      - q_proj
+      - k_proj
+      - v_proj
+      - o_proj
+      - gate_proj
+      - up_proj
+      - down_proj
+
+train:
+  num_epochs: 3
+  batch_size: 2
+  grad_accum: 8
+  # Lower LR than v2 (8e-5): train loss already ~0.05 and val still falling.
+  learning_rate: 3.0e-5
+  weight_decay: 0.01
+  warmup_ratio: 0.02
+  max_seq_length: 512
+  max_train_samples: null
+  logging_steps: 20
+  save_steps: 500
+  eval_steps: 500
+  gradient_checkpointing: true
+  bf16: true
+  fp16: false
+  dataloader_num_workers: 8
+  resume_from: outputs/superpod_action_v2/checkpoint-final
+
+eval:
+  checkpoint: outputs/superpod_action_v3/checkpoint-final
+  max_samples: 512
+  zero_shot_baseline: false

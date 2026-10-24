@@ -50,8 +50,15 @@ def build_model_and_processor(cfg: dict[str, Any], *, for_training: bool = True)
             bnb_4bit_use_double_quant=True,
         )
 
-    dtype = torch.bfloat16 if cfg["train"].get("bf16", True) else torch.float16
     use_cuda = torch.cuda.is_available()
+    use_mps = (not use_cuda) and hasattr(torch.backends, "mps") and torch.backends.mps.is_available()
+    # MPS is happier with float16/float32 than bf16 for local Mac inference.
+    if use_cuda and cfg["train"].get("bf16", True):
+        dtype = torch.bfloat16
+    elif use_cuda or use_mps:
+        dtype = torch.float16
+    else:
+        dtype = torch.float32
 
     # Training: avoid device_map="auto" (often hangs / mis-places grads with PEFT on Windows).
     # 4-bit needs a fixed map onto cuda:0. Full bf16/fp16: load then .to(device).
@@ -70,8 +77,17 @@ def build_model_and_processor(cfg: dict[str, Any], *, for_training: bool = True)
         )
         if use_cuda:
             model = model.to("cuda")
+        elif use_mps and not for_training:
+            model = model.to("mps")
         else:
             model = model.to("cpu")
+
+    resume_from = cfg.get("train", {}).get("resume_from")
+    if for_training and resume_from:
+        # Continue an existing LoRA instead of creating a fresh adapter.
+        model = PeftModel.from_pretrained(model, str(resume_from), is_trainable=True)
+        model.print_trainable_parameters()
+        return model, processor
 
     if for_training:
         # Must disable KV cache before gradient checkpointing.

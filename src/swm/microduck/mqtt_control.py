@@ -237,6 +237,8 @@ class MqttVelocityClient:
         yaw: float = 0.0,
         kick: str | None = None,
         instruction: str | None = None,
+        action_command: str | None = None,
+        task: str | None = None,
     ) -> dict[str, float]:
         payload = velocity_payload(vx, vy, yaw)
         if self.on_publish is not None:
@@ -250,6 +252,10 @@ class MqttVelocityClient:
             wire["kick"] = kick
         if instruction in ("hold", "push_in"):
             wire["instruction"] = instruction
+        if action_command and len(action_command) <= 500:
+            wire["action_command"] = action_command
+        if task and len(task) <= 200:
+            wire["task"] = task
         body = json.dumps(
             wire,
             separators=(",", ":"),

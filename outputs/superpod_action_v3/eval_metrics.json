@@ -1,0 +1,20 @@
+{
+  "zero_shot": {
+    "exact_match": 0.0,
+    "parse_rate": 0.0,
+    "n": 512,
+    "acc_target_visible": 0.0,
+    "acc_action": 0.0,
+    "acc_magnitude": 0.0,
+    "acc_gripper": 0.0
+  },
+  "finetuned": {
+    "exact_match": 0.494140625,
+    "parse_rate": 1.0,
+    "n": 512,
+    "acc_target_visible": 1.0,
+    "acc_action": 0.494140625,
+    "acc_magnitude": 0.74609375,
+    "acc_gripper": 1.0
+  }
+}
