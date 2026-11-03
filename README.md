@@ -24,10 +24,18 @@ python scripts/prepare_dataset.py --config configs/default.yaml
 # Train LoRA (single GPU)
 bash scripts/train.sh                 # or: bash scripts/train.sh configs/low_vram.yaml
 
-# Evaluate vs zero-shot baseline
+# Evaluate vs zero-shot baseline (Layer A: EM + macro-F1)
 bash scripts/eval.sh
 
-# Interactive demo (Part A — LIBERO)
+# Ablations A2/A3 + Layer B planner (B0–B3, horizons 1–2)
+# CHECKPOINT=outputs/superpod/checkpoint-final bash scripts/run_ablations.sh configs/superpod.yaml
+bash scripts/run_ablations.sh
+bash scripts/eval_planner.sh
+
+# Imagine-then-Act (CLI): counterfactual outcomes → best action
+bash scripts/imagine_then_act.sh configs/superpod.yaml --index 0 --top 8
+
+# Interactive demo (Part A — LIBERO Observe → Imagine → Act)
 bash scripts/run_demo.sh
 
 # Optional Part B — LoRA picks a velocity; the simulator walks the duck.
@@ -118,6 +126,8 @@ scripts\eval.bat
 ## Project docs
 
 - Proposal: `../_00. Ideate/Project_Proposal_Imagine_then_Act.md`
+- **Report (what we are doing):** `../_00. Ideate/Project_Report_Imagine_then_Act.md`
 - Spec: `TECH_SPEC.md`
+- Eval / ablations: `docs/EVAL.md`
 - Part B (MicroDuck): `docs/MICRODUCK_DEMO.md`
 - Config: `configs/default.yaml` · `configs/microduck_demo.yaml`

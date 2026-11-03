@@ -1,4 +1,30 @@
-# How the LoRA controls MicroDuck
+# How Imagine-then-Act controls MicroDuck
+
+## Preferred mode: `--mode imagine` (default)
+
+```bash
+# Terminal 1 — sim
+cd ../microduck_demo_part1 && MICRODUCK_SKIP_VLM=1 ./scripts/run_simulator.sh --vision-ball
+
+# Terminal 2 — Imagine-then-Act with the LIBERO semantic LoRA
+cd ../semantic-world-model
+./scripts/run_microduck_vision.sh \
+  --mode imagine \
+  --checkpoint outputs/superpod/checkpoint-final \
+  --config configs/microduck_demo.yaml
+```
+
+For each new `zone.ppm`, the semantic world model **imagines** outcomes for many
+`(vx, yaw)` candidates (mapped into the LIBERO action prompt), then **acts** by
+publishing the best velocity over MQTT.
+
+## Legacy mode: `--mode action`
+
+Single `MOVE_*` decode from an action-command LoRA (no counterfactual ranking).
+
+---
+
+# How the LoRA controls MicroDuck (background)
 
 The trained checkpoint does not move the duck’s joints. It chooses a walking speed. A separate simulator turns that speed into footsteps.
 

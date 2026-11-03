@@ -63,6 +63,8 @@ train:
 eval:
   checkpoint: outputs/run001/checkpoint-final
   max_samples: 512
+  # Planner eval is K× slower; keep smaller unless you have GPU time.
+  planner_max_samples: 64
   zero_shot_baseline: true
 
 planner:
