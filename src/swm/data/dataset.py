@@ -25,13 +25,16 @@ class SemanticTransitionDataset(Dataset):
         if not image_path.is_file() and self.frames_root is not None:
             image_path = self.frames_root / image_path.name
         image = Image.open(image_path).convert("RGB")
-        prompt = build_prompt(row["task"], row["action"])
+        # Action-command rows carry their own prompt/answer so the same
+        # trainer can learn instruction -> action instead of action -> outcome.
+        prompt = row.get("prompt") or build_prompt(row["task"], row["action"])
+        answer = row.get("answer") or row["outcome"]
         return {
             "image": image,
             "prompt": prompt,
-            "answer": row["outcome"],
+            "answer": answer,
             "task": row["task"],
-            "action": row["action"],
+            "action": row.get("action", []),
             "episode_id": row.get("episode_id", -1),
         }
 

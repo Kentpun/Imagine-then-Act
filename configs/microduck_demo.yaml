@@ -40,8 +40,8 @@ planner:
 
 mqtt:
   # Point at microduck_demo_part1 .demo/session.env after bootstrap
-  enabled: false
-  dry_run: true
+  enabled: true
+  dry_run: false
   session_env: .demo/session.env
   host: broker.emqx.io
   port: 1883

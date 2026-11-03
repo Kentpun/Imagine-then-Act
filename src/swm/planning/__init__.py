@@ -1,3 +1,11 @@
-from .imagination_planner import ImaginationPlanner, candidate_actions
+from .imagination_planner import ImaginationPlanner, RankedAction, candidate_actions
+from .imagine_then_act import ImagineThenAct, ImagineThenActResult, ImaginationStep
 
-__all__ = ["ImaginationPlanner", "candidate_actions"]
+__all__ = [
+    "ImaginationPlanner",
+    "RankedAction",
+    "candidate_actions",
+    "ImagineThenAct",
+    "ImagineThenActResult",
+    "ImaginationStep",
+]

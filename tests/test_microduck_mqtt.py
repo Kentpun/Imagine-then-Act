@@ -61,6 +61,22 @@ def test_load_session_env(tmp_path: Path):
     assert s.port == 1883
 
 
+def test_official_microduck_session_env(tmp_path: Path):
+    """microduck_demo_part1 writes MICRODUCK_* keys, not SESSION_ID."""
+    env = tmp_path / "session.env"
+    env.write_text(
+        "MICRODUCK_SESSION_ID=abc123\n"
+        "MICRODUCK_BROKER_HOST=broker.emqx.io\n"
+        "MICRODUCK_BROKER_PORT=1883\n",
+        encoding="utf-8",
+    )
+    s = resolve_session(session_env=env)
+    assert s.session_id == "abc123"
+    assert s.topic == "microduck/demo/abc123/cmd/velocity"
+    assert s.host == "broker.emqx.io"
+    assert s.port == 1883
+
+
 def test_dry_run_stream_payloads():
     logged: list[tuple[str, dict]] = []
     session = MqttSession(session_id="test")

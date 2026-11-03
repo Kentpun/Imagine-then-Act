@@ -65,6 +65,7 @@ train:
 eval:
   checkpoint: outputs/superpod/checkpoint-final
   max_samples: 512
+  planner_max_samples: 64
   zero_shot_baseline: true
 
 planner:
