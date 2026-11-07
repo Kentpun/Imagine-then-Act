@@ -13,6 +13,8 @@ def candidate_actions(cfg: dict[str, Any]) -> list[list[float]]:
 
     Skips pairs where yaw != 0 and vx <= 0 (policy cannot turn in place).
     Forces vy = 0.
+    Optional kick sentinel: [0,0,0] with gripper=1 encoded as action[6]=1 via
+    libero mapping when include_kick is true (planner stores marker yaw=9.0).
     """
     planner = cfg["planner"]
     actions: list[list[float]] = []
@@ -25,7 +27,10 @@ def candidate_actions(cfg: dict[str, Any]) -> list[list[float]]:
             if abs(yaw_f) > 1e-6 and vx_f <= 1e-6:
                 continue
             actions.append([vx_f, 0.0, yaw_f])
-    return actions[: int(planner.get("max_candidates", 16))]
+    if planner.get("include_kick"):
+        # Sentinel: yaw=9.0 means "kick" skill for the multitask demo router.
+        actions.append([0.0, 0.0, 9.0])
+    return actions[: int(planner.get("max_candidates", 24))]
 
 
 @dataclass
@@ -58,14 +63,21 @@ class MicroDuckImaginationPlanner:
         from swm.data.prompts import build_prompt as libero_prompt
         from swm.models.semantic_vlm import generate_outcome
 
-        # The SuperPOD LoRA was trained on delta_xyz prompts. Map vx→dx, yaw→dy.
+        # Map vx→dx, yaw→dy; kick sentinel yaw=9 → gripper close cue.
         vx = float(action[0]) if action else 0.0
         yaw = float(action[2]) if len(action) > 2 else 0.0
-        libero_action = [vx, yaw, 0.0, 0.0, 0.0, 0.0, 0.0]
-        prompt = libero_prompt(
-            f"{task.strip()} (locomotion vx={vx:.2f}, yaw={yaw:.2f})",
-            libero_action,
-        )
+        is_kick = abs(yaw - 9.0) < 1e-6
+        libero_action = [
+            0.0 if is_kick else vx,
+            0.0 if is_kick else yaw,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0 if is_kick else 0.0,
+        ]
+        note = "skill=kick" if is_kick else f"locomotion vx={vx:.2f}, yaw={yaw:.2f}"
+        prompt = libero_prompt(f"{task.strip()} ({note})", libero_action)
         return generate_outcome(
             self.model,
             self.processor,

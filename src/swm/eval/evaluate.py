@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from swm.data.dataset import SemanticTransitionDataset
 from swm.data.prompts import build_prompt
-from swm.eval.metrics import summarize_predictions
+from swm.eval.metrics import summarize_by_task, summarize_predictions
 from swm.models.semantic_vlm import (
     build_model_and_processor,
     generate_outcome,
@@ -46,10 +46,11 @@ def collect_predictions(
     blank_image: bool = False,
     shuffle_action: bool = False,
     seed: int = 42,
-) -> tuple[list[str], list[str]]:
+) -> tuple[list[str], list[str], list[str]]:
     rng = random.Random(seed)
     preds: list[str] = []
     golds: list[str] = []
+    tasks: list[str] = []
     n = min(len(ds), max_samples)
     for i in tqdm(range(n), desc="eval"):
         sample = ds[i]
@@ -68,7 +69,8 @@ def collect_predictions(
         )
         preds.append(pred)
         golds.append(sample["answer"])
-    return preds, golds
+        tasks.append(str(sample.get("task") or ""))
+    return preds, golds, tasks
 
 
 def run_model(
@@ -81,8 +83,10 @@ def run_model(
     blank_image: bool = False,
     shuffle_action: bool = False,
     seed: int = 42,
+    bootstrap: bool = False,
+    per_task: bool = False,
 ) -> dict:
-    preds, golds = collect_predictions(
+    preds, golds, tasks = collect_predictions(
         model,
         processor,
         ds,
@@ -92,10 +96,14 @@ def run_model(
         shuffle_action=shuffle_action,
         seed=seed,
     )
-    metrics = summarize_predictions(preds, golds)
+    metrics = summarize_predictions(preds, golds, bootstrap=bootstrap, seed=seed)
     metrics["format_hint"] = format_hint
     metrics["blank_image"] = blank_image
     metrics["shuffle_action"] = shuffle_action
+    if per_task:
+        metrics["per_task"] = summarize_by_task(
+            preds, golds, tasks, bootstrap=False, seed=seed
+        )
     return metrics
 
 
@@ -131,6 +139,21 @@ def parse_args() -> argparse.Namespace:
         help="Ablation A2: shuffle action channels at eval time.",
     )
     p.add_argument(
+        "--no_format_hint",
+        action="store_true",
+        help="Ablation A6: zero-shot without output format hint.",
+    )
+    p.add_argument(
+        "--bootstrap",
+        action="store_true",
+        help="Attach bootstrap CIs for exact_match and macro_f1.",
+    )
+    p.add_argument(
+        "--per_task",
+        action="store_true",
+        help="Also report metrics broken down by language task.",
+    )
+    p.add_argument(
         "--max_samples",
         type=int,
         default=None,
@@ -154,7 +177,6 @@ def main() -> None:
     frames = Path(cfg["paths"]["frames_dir"])
     split_path = processed / f"{args.split}.jsonl"
     if not split_path.is_file():
-        # Fall back to val if test was never written.
         if args.split == "test" and (processed / "val.jsonl").is_file():
             print("test.jsonl missing; falling back to val.jsonl")
             split_path = processed / "val.jsonl"
@@ -165,27 +187,37 @@ def main() -> None:
     max_samples = int(args.max_samples or cfg["eval"].get("max_samples", 512))
     out_dir = ensure_dir(cfg["paths"]["output_dir"])
     seed = int(cfg.get("seed", 42))
+    bootstrap = bool(args.bootstrap or cfg["eval"].get("bootstrap", False))
+    per_task = bool(args.per_task or cfg["eval"].get("per_task", False))
 
     ablation = {
         "blank_image": bool(args.blank_image),
         "shuffle_action": bool(args.shuffle_action),
+        "no_format_hint": bool(args.no_format_hint),
         "split": args.split,
+        "max_samples": max_samples,
     }
     results: dict = {"ablation": ablation, "seed": seed}
 
     run_zs = cfg["eval"].get("zero_shot_baseline", True) and not args.finetuned_only
     if run_zs:
-        print("Evaluating frozen zero-shot baseline (with output format hint)...")
+        hint = not args.no_format_hint
+        print(
+            "Evaluating frozen zero-shot baseline "
+            f"(format_hint={hint})..."
+        )
         zs_model, zs_proc = build_model_and_processor(cfg, for_training=False)
         results["zero_shot"] = run_model(
             zs_model,
             zs_proc,
             ds,
             max_samples,
-            format_hint=True,
+            format_hint=hint,
             blank_image=args.blank_image,
             shuffle_action=args.shuffle_action,
             seed=seed,
+            bootstrap=bootstrap,
+            per_task=per_task,
         )
         del zs_model
 
@@ -203,6 +235,8 @@ def main() -> None:
             blank_image=args.blank_image,
             shuffle_action=args.shuffle_action,
             seed=seed,
+            bootstrap=bootstrap,
+            per_task=per_task,
         )
     else:
         print(f"Checkpoint not found ({ckpt}); skipped fine-tuned eval.")
@@ -214,6 +248,8 @@ def main() -> None:
             bits.append("blank_image")
         if args.shuffle_action:
             bits.append("shuffle_action")
+        if args.no_format_hint:
+            bits.append("no_format_hint")
         tag = "_".join(bits) if bits != ["val"] else ""
     name = "eval_metrics.json" if not tag else f"eval_metrics_{tag}.json"
     out_path = Path(out_dir) / name

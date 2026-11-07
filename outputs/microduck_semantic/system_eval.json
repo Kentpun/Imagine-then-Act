@@ -1,0 +1,26 @@
+{
+  "n": 8,
+  "checkpoint": null,
+  "tasks": {
+    "walk_ab": {
+      "random": 0.125,
+      "geometric": 1.0,
+      "microduck_lora": 0.0
+    },
+    "kick_goal": {
+      "random": 0.5,
+      "geometric": 0.25,
+      "microduck_lora": 0.0
+    },
+    "keep_zone": {
+      "random": 0.0,
+      "geometric": 0.125,
+      "microduck_lora": 0.0
+    },
+    "conditional": {
+      "random": 0.0,
+      "geometric": 0.0,
+      "microduck_lora": 0.0
+    }
+  }
+}

@@ -1,0 +1,378 @@
+Checking SSH to superpod...
+ssh: Could not resolve hostname suTue Nov  3 19:40:43 HKT 2026: timed out after ~60min waiting for VPN
+ 3 16:46:56 HKT 2026: try 2 — not reachable
+Tue Nov  3 16:47:12 HKT 2026: try 3 — not reachable
+Tue Nov  3 16:47:17 HKT 2026: wait-loop start
+Tue Nov  3 16:47:17 HKT 2026: try 1 fail
+Tue Nov  3 16:47:26 HKT 2026: try 3 — not reachable
+Tue Nov  3 16:47:42 HKT 2026: try 4 — not reachable
+Tue Nov  3 16:47:47 HKT 2026: try 2 fail
+Tue Nov  3 16:47:56 HKT 2026: try 4 — not reachable
+Tue Nov  3 16:48:12 HKT 2026: try 5 — not reachable
+Tue Nov  3 16:48:17 HKT 2026: try 3 fail
+Tue Nov  3 16:48:26 HKT 2026: try 5 — not reachable
+Tue Nov  3 16:48:42 HKT 2026: try 6 — not reachable
+Tue Nov  3 16:48:47 HKT 2026: try 4 fail
+Tue Nov  3 16:48:56 HKT 2026: try 6 — not reachable
+Tue Nov  3 16:49:12 HKT 2026: try 7 — not reachable
+Tue Nov  3 16:49:17 HKT 2026: try 5 fail
+Tue Nov  3 16:49:26 HKT 2026: try 7 — not reachable
+Tue Nov  3 16:49:42 HKT 2026: try 8 — not reachable
+Tue Nov  3 16:49:47 HKT 2026: try 6 fail
+Tue Nov  3 16:49:56 HKT 2026: try 8 — not reachable
+Tue Nov  3 16:50:12 HKT 2026: try 9 — not reachable
+Tue Nov  3 16:50:17 HKT 2026: try 7 fail
+Tue Nov  3 16:50:26 HKT 2026: try 9 — not reachable
+Tue Nov  3 16:50:42 HKT 2026: try 10 — not reachable
+Tue Nov  3 16:50:47 HKT 2026: try 8 fail
+Tue Nov  3 16:50:56 HKT 2026: try 10 — not reachable
+Tue Nov  3 16:51:12 HKT 2026: try 11 — not reachable
+Tue Nov  3 16:51:17 HKT 2026: try 9 fail
+Tue Nov  3 16:51:26 HKT 2026: try 11 — not reachable
+Tue Nov  3 16:51:42 HKT 2026: try 12 — not reachable
+Tue Nov  3 16:51:47 HKT 2026: try 10 fail
+Tue Nov  3 16:51:57 HKT 2026: try 12 — not reachable
+Tue Nov  3 16:52:12 HKT 2026: try 13 — not reachable
+Tue Nov  3 16:52:17 HKT 2026: try 11 fail
+Tue Nov  3 16:52:27 HKT 2026: try 13 — not reachable
+Tue Nov  3 16:52:42 HKT 2026: try 14 — not reachable
+Tue Nov  3 16:52:47 HKT 2026: try 12 fail
+Tue Nov  3 16:52:57 HKT 2026: try 14 — not reachable
+Tue Nov  3 16:53:12 HKT 2026: try 15 — not reachable
+Tue Nov  3 16:53:17 HKT 2026: try 13 fail
+Tue Nov  3 16:53:27 HKT 2026: try 15 — not reachable
+Tue Nov  3 16:53:42 HKT 2026: try 16 — not reachable
+Tue Nov  3 16:53:47 HKT 2026: try 14 fail
+Tue Nov  3 16:53:57 HKT 2026: try 16 — not reachable
+Tue Nov  3 16:54:13 HKT 2026: try 17 — not reachable
+Tue Nov  3 16:54:17 HKT 2026: try 15 fail
+Tue Nov  3 16:54:27 HKT 2026: try 17 — not reachable
+Tue Nov  3 16:54:43 HKT 2026: try 18 — not reachable
+Tue Nov  3 16:54:47 HKT 2026: try 16 fail
+Tue Nov  3 16:54:57 HKT 2026: try 18 — not reachable
+Tue Nov  3 16:55:13 HKT 2026: try 19 — not reachable
+Tue Nov  3 16:55:17 HKT 2026: try 17 fail
+Tue Nov  3 16:55:27 HKT 2026: try 19 — not reachable
+Tue Nov  3 16:55:43 HKT 2026: try 20 — not reachable
+Tue Nov  3 16:55:47 HKT 2026: try 18 fail
+Tue Nov  3 16:55:57 HKT 2026: try 20 — not reachable
+Tue Nov  3 16:56:13 HKT 2026: try 21 — not reachable
+Tue Nov  3 16:56:17 HKT 2026: try 19 fail
+Tue Nov  3 16:56:27 HKT 2026: try 21 — not reachable
+Tue Nov  3 16:56:43 HKT 2026: try 22 — not reachable
+Tue Nov  3 16:56:47 HKT 2026: try 20 fail
+Tue Nov  3 16:56:56 HKT 2026: 2h wait-loop (pid 5384)
+Tue Nov  3 16:56:57 HKT 2026: try 22 — not reachable
+Tue Nov  3 16:57:13 HKT 2026: try 23 — not reachable
+Tue Nov  3 16:57:17 HKT 2026: try 21 fail
+Tue Nov  3 16:57:27 HKT 2026: try 23 — not reachable
+Tue Nov  3 16:57:43 HKT 2026: try 24 — not reachable
+Tue Nov  3 16:57:47 HKT 2026: try 22 fail
+Tue Nov  3 16:57:57 HKT 2026: try 24 — not reachable
+Tue Nov  3 16:58:13 HKT 2026: try 25 — not reachable
+Tue Nov  3 16:58:17 HKT 2026: try 23 fail
+Tue Nov  3 16:58:27 HKT 2026: try 25 — not reachable
+Tue Nov  3 16:58:43 HKT 2026: try 26 — not reachable
+Tue Nov  3 16:58:48 HKT 2026: try 24 fail
+Tue Nov  3 16:58:56 HKT 2026: try 5 fail
+Tue Nov  3 16:58:57 HKT 2026: try 26 — not reachable
+Checking SSH to superpod...
+ok
+slogin-01
+kkpun
+Rsyncing code -> superpod:~/semantic-world-model
+Tue Nov  3 16:59:13 HKT 2026: try 27 — not reachable
+Tue Nov  3 16:59:18 HKT 2026: try 25 fail
+Tue Nov  3 16:59:27 HKT 2026: try 27 — not reachable
+Tue Nov  3 16:59:43 HKT 2026: try 28 — not reachable
+Tue Nov  3 16:59:48 HKT 2026: try 26 fail
+Tue Nov  3 16:59:57 HKT 2026: try 28 — not reachable
+Tue Nov  3 17:00:13 HKT 2026: try 29 — not reachable
+Tue Nov  3 17:00:18 HKT 2026: try 27 fail
+Tue Nov  3 17:00:27 HKT 2026: try 29 — not reachable
+Tue Nov  3 17:00:43 HKT 2026: try 30 — not reachable
+Tue Nov  3 17:00:48 HKT 2026: try 28 fail
+Tue Nov  3 17:00:57 HKT 2026: try 30 — not reachable
+Tue Nov  3 17:01:13 HKT 2026: try 31 — not reachable
+Tue Nov  3 17:01:18 HKT 2026: try 29 fail
+Tue Nov  3 17:01:27 HKT 2026: try 10 fail
+Tue Nov  3 17:01:27 HKT 2026: try 31 — not reachable
+Tue Nov  3 17:01:43 HKT 2026: try 32 — not reachable
+Tue Nov  3 17:01:48 HKT 2026: try 30 fail
+Tue Nov  3 17:01:57 HKT 2026: try 32 — not reachable
+Tue Nov  3 17:02:13 HKT 2026: try 33 — not reachable
+Tue Nov  3 17:02:18 HKT 2026: try 31 fail
+Tue Nov  3 17:02:27 HKT 2026: try 33 — not reachable
+Tue Nov  3 17:02:43 HKT 2026: try 34 — not reachable
+Tue Nov  3 17:02:48 HKT 2026: try 32 fail
+Tue Nov  3 17:02:57 HKT 2026: try 34 — not reachable
+Tue Nov  3 17:03:13 HKT 2026: try 35 — not reachable
+Tue Nov  3 17:03:18 HKT 2026: try 33 fail
+Tue Nov  3 17:03:27 HKT 2026: try 35 — not reachable
+Tue Nov  3 17:03:43 HKT 2026: try 36 — not reachable
+Tue Nov  3 17:03:48 HKT 2026: try 34 fail
+Tue Nov  3 17:03:57 HKT 2026: try 15 fail
+Tue Nov  3 17:03:57 HKT 2026: try 36 — not reachable
+Connection to superpod.ust.hk closed by remote host.
+client_loop: send disconnect: Broken pipe
+rsync(9325): error: unexpected end of file
+Tue Nov  3 17:04:13 HKT 2026: try 37 — not reachable
+Tue Nov  3 17:04:18 HKT 2026: try 35 fail
+Tue Nov  3 17:04:27 HKT 2026: try 37 — not reachable
+Tue Nov  3 17:04:43 HKT 2026: submitted JOB=739920 (PD Priority)
+Tue Nov  3 17:04:43 HKT 2026: monitor start for 739920
+Tue Nov  3 17:04:43 HKT 2026: try 38 — not reachable
+Tue Nov  3 17:04:48 HKT 2026: try 36 fail
+Tue Nov  3 17:04:57 HKT 2026: already submitted 739920
+Tue Nov  3 17:04:57 HKT 2026: try 38 — not reachable
+Tue Nov  3 17:05:41 HKT 2026: try 39 — not reachable
+Tue Nov  3 17:05:46 HKT 2026: try 37 fail
+Tue Nov  3 17:05:56 HKT 2026: try 39 — not reachable
+Tue Nov  3 17:06:11 HKT 2026: try 40 — not reachable
+Tue Nov  3 17:06:16 HKT 2026: try 38 fail
+Tue Nov  3 17:06:26 HKT 2026: try 40 — not reachable
+Tue Nov  3 17:23:01 HKT 2026: try 41 — not reachable
+Tue Nov  3 17:23:05 HKT 2026: try 39 fail
+Tue Nov  3 17:23:15 HKT 2026: try 41 — not reachable
+Tue Nov  3 17:23:31 HKT 2026: try 42 — not reachable
+Tue Nov  3 17:23:35 HKT 2026: try 40 fail
+Tue Nov  3 17:23:45 HKT 2026: try 42 — not reachable
+Tue Nov  3 17:24:01 HKT 2026: try 43 — not reachable
+Tue Nov  3 17:24:05 HKT 2026: try 41 fail
+Tue Nov  3 17:24:15 HKT 2026: try 43 — not reachable
+Tue Nov  3 17:24:31 HKT 2026: try 44 — not reachable
+Tue Nov  3 17:24:35 HKT 2026: try 42 fail
+Tue Nov  3 17:24:45 HKT 2026: try 44 — not reachable
+Tue Nov  3 17:25:01 HKT 2026: try 45 — not reachable
+Tue Nov  3 17:25:05 HKT 2026: try 43 fail
+Tue Nov  3 17:25:15 HKT 2026: try 45 — not reachable
+Tue Nov  3 17:25:31 HKT 2026: try 46 — not reachable
+Tue Nov  3 17:25:35 HKT 2026: try 44 fail
+Tue Nov  3 17:25:45 HKT 2026: try 46 — not reachable
+Tue Nov  3 17:26:01 HKT 2026: try 47 — not reachable
+Tue Nov  3 17:26:06 HKT 2026: try 45 fail
+Tue Nov  3 17:26:15 HKT 2026: try 47 — not reachable
+Tue Nov  3 17:26:31 HKT 2026: try 48 — not reachable
+Tue Nov  3 17:26:36 HKT 2026: try 46 fail
+Tue Nov  3 17:27:13 HKT 2026: try 48 — not reachable
+Tue Nov  3 17:27:29 HKT 2026: try 49 — not reachable
+Tue Nov  3 17:27:34 HKT 2026: try 47 fail
+Tue Nov  3 17:27:43 HKT 2026: try 49 — not reachable
+Tue Nov  3 17:31:58 HKT 2026: try 50 — not reachable
+Tue Nov  3 17:32:02 HKT 2026: try 48 fail
+Tue Nov  3 17:32:12 HKT 2026: try 50 — not reachable
+Tue Nov  3 17:32:28 HKT 2026: try 51 — not reachable
+Tue Nov  3 17:32:32 HKT 2026: try 49 fail
+Tue Nov  3 17:32:42 HKT 2026: try 51 — not reachable
+Tue Nov  3 17:32:58 HKT 2026: try 52 — not reachable
+Tue Nov  3 17:33:02 HKT 2026: try 50 fail
+Tue Nov  3 17:33:12 HKT 2026: try 52 — not reachable
+Tue Nov  3 17:33:28 HKT 2026: try 53 — not reachable
+Tue Nov  3 17:33:32 HKT 2026: try 51 fail
+Tue Nov  3 17:33:42 HKT 2026: try 53 — not reachable
+Tue Nov  3 17:33:58 HKT 2026: try 54 — not reachable
+Tue Nov  3 17:34:02 HKT 2026: try 52 fail
+Tue Nov  3 17:34:12 HKT 2026: try 54 — not reachable
+Tue Nov  3 17:34:28 HKT 2026: try 55 — not reachable
+Tue Nov  3 17:34:32 HKT 2026: try 53 fail
+Tue Nov  3 17:34:42 HKT 2026: try 55 — not reachable
+Tue Nov  3 17:34:58 HKT 2026: try 56 — not reachable
+Tue Nov  3 17:35:02 HKT 2026: try 54 fail
+Tue Nov  3 17:35:12 HKT 2026: try 56 — not reachable
+Tue Nov  3 17:35:28 HKT 2026: try 57 — not reachable
+Tue Nov  3 17:35:33 HKT 2026: try 55 fail
+Tue Nov  3 17:35:42 HKT 2026: try 57 — not reachable
+Tue Nov  3 17:35:58 HKT 2026: try 58 — not reachable
+Tue Nov  3 17:36:03 HKT 2026: try 56 fail
+Tue Nov  3 17:36:12 HKT 2026: try 58 — not reachable
+Tue Nov  3 17:36:28 HKT 2026: try 59 — not reachable
+Tue Nov  3 17:36:33 HKT 2026: try 57 fail
+Tue Nov  3 17:36:42 HKT 2026: try 59 — not reachable
+Tue Nov  3 17:36:58 HKT 2026: try 60 — not reachable
+Tue Nov  3 17:37:03 HKT 2026: try 58 fail
+Tue Nov  3 17:37:12 HKT 2026: try 60 — not reachable
+Tue Nov  3 17:37:28 HKT 2026: try 61 — not reachable
+Tue Nov  3 17:37:33 HKT 2026: try 59 fail
+Tue Nov  3 17:37:42 HKT 2026: try 61 — not reachable
+Tue Nov  3 17:37:58 HKT 2026: try 62 — not reachable
+Tue Nov  3 17:38:03 HKT 2026: try 60 fail
+Tue Nov  3 17:38:12 HKT 2026: try 62 — not reachable
+Tue Nov  3 17:38:28 HKT 2026: try 63 — not reachable
+Tue Nov  3 17:38:33 HKT 2026: try 61 fail
+Tue Nov  3 17:38:42 HKT 2026: try 63 — not reachable
+Tue Nov  3 17:38:58 HKT 2026: try 64 — not reachable
+Tue Nov  3 17:39:03 HKT 2026: try 62 fail
+Tue Nov  3 17:39:12 HKT 2026: try 64 — not reachable
+Tue Nov  3 17:39:28 HKT 2026: try 65 — not reachable
+Tue Nov  3 17:39:33 HKT 2026: try 63 fail
+Tue Nov  3 17:39:42 HKT 2026: try 65 — not reachable
+Tue Nov  3 17:39:58 HKT 2026: try 66 — not reachable
+Tue Nov  3 17:40:03 HKT 2026: try 64 fail
+Tue Nov  3 17:40:12 HKT 2026: try 66 — not reachable
+Tue Nov  3 17:40:56 HKT 2026: try 67 — not reachable
+Tue Nov  3 17:41:01 HKT 2026: try 65 fail
+Tue Nov  3 17:41:10 HKT 2026: try 67 — not reachable
+Tue Nov  3 17:41:26 HKT 2026: try 68 — not reachable
+Tue Nov  3 17:41:37 HKT 2026: try 66 fail
+Tue Nov  3 17:41:47 HKT 2026: try 68 — not reachable
+Tue Nov  3 17:42:03 HKT 2026: try 69 — not reachable
+Tue Nov  3 17:42:07 HKT 2026: try 67 fail
+Tue Nov  3 17:42:17 HKT 2026: try 69 — not reachable
+Tue Nov  3 17:42:33 HKT 2026: try 70 — not reachable
+Tue Nov  3 17:42:37 HKT 2026: try 68 fail
+Tue Nov  3 17:42:47 HKT 2026: try 70 — not reachable
+Tue Nov  3 17:43:03 HKT 2026: try 71 — not reachable
+Tue Nov  3 17:43:07 HKT 2026: try 69 fail
+Tue Nov  3 17:43:17 HKT 2026: try 71 — not reachable
+Tue Nov  3 17:43:33 HKT 2026: try 72 — not reachable
+Tue Nov  3 17:43:38 HKT 2026: try 70 fail
+Tue Nov  3 17:43:47 HKT 2026: try 72 — not reachable
+Tue Nov  3 17:44:03 HKT 2026: try 73 — not reachable
+Tue Nov  3 17:44:08 HKT 2026: try 71 fail
+Tue Nov  3 17:44:17 HKT 2026: try 73 — not reachable
+Tue Nov  3 17:44:33 HKT 2026: try 74 — not reachable
+Tue Nov  3 17:44:38 HKT 2026: try 72 fail
+Tue Nov  3 17:44:47 HKT 2026: try 74 — not reachable
+Tue Nov  3 17:45:03 HKT 2026: try 75 — not reachable
+Tue Nov  3 17:45:08 HKT 2026: try 73 fail
+Tue Nov  3 17:45:17 HKT 2026: try 75 — not reachable
+Tue Nov  3 17:45:33 HKT 2026: try 76 — not reachable
+Tue Nov  3 17:45:38 HKT 2026: try 74 fail
+Tue Nov  3 17:45:47 HKT 2026: try 76 — not reachable
+Tue Nov  3 17:46:03 HKT 2026: try 77 — not reachable
+Tue Nov  3 17:46:08 HKT 2026: try 75 fail
+Tue Nov  3 17:46:17 HKT 2026: try 77 — not reachable
+Tue Nov  3 17:46:33 HKT 2026: try 78 — not reachable
+Tue Nov  3 17:46:38 HKT 2026: try 76 fail
+Tue Nov  3 17:46:47 HKT 2026: try 78 — not reachable
+Tue Nov  3 17:47:03 HKT 2026: try 79 — not reachable
+Tue Nov  3 17:47:08 HKT 2026: try 77 fail
+Tue Nov  3 17:47:17 HKT 2026: try 79 — not reachable
+Tue Nov  3 17:48:20 HKT 2026: try 80 — not reachable
+Tue Nov  3 17:48:25 HKT 2026: try 78 fail
+Tue Nov  3 17:48:34 HKT 2026: try 80 — not reachable
+Tue Nov  3 17:48:50 HKT 2026: try 81 — not reachable
+Tue Nov  3 17:48:55 HKT 2026: try 79 fail
+Tue Nov  3 18:05:11 HKT 2026: try 81 — not reachable
+Tue Nov  3 18:05:28 HKT 2026: try 82 — not reachable
+Tue Nov  3 18:05:32 HKT 2026: try 80 fail
+Tue Nov  3 18:05:41 HKT 2026: try 82 — not reachable
+Tue Nov  3 18:21:21 HKT 2026: try 83 — not reachable
+Tue Nov  3 18:21:25 HKT 2026: try 81 fail
+Tue Nov  3 18:21:34 HKT 2026: try 83 — not reachable
+Tue Nov  3 18:21:51 HKT 2026: try 84 — not reachable
+Tue Nov  3 18:21:55 HKT 2026: try 82 fail
+Tue Nov  3 18:22:05 HKT 2026: try 84 — not reachable
+Tue Nov  3 18:22:21 HKT 2026: try 85 — not reachable
+Tue Nov  3 18:22:25 HKT 2026: try 83 fail
+Tue Nov  3 18:22:35 HKT 2026: try 85 — not reachable
+Tue Nov  3 18:39:59 HKT 2026: try 86 — not reachable
+Tue Nov  3 18:40:03 HKT 2026: try 84 fail
+Tue Nov  3 18:40:13 HKT 2026: try 86 — not reachable
+Tue Nov  3 18:40:29 HKT 2026: try 87 — not reachable
+Tue Nov  3 18:40:33 HKT 2026: try 85 fail
+Tue Nov  3 18:56:17 HKT 2026: try 87 — not reachable
+Tue Nov  3 18:56:33 HKT 2026: try 88 — not reachable
+Tue Nov  3 18:56:38 HKT 2026: try 86 fail
+Tue Nov  3 18:56:47 HKT 2026: try 88 — not reachable
+Tue Nov  3 19:08:57 HKT 2026: try 89 — not reachable
+Tue Nov  3 19:09:02 HKT 2026: try 87 fail
+Tue Nov  3 19:09:11 HKT 2026: try 89 — not reachable
+Tue Nov  3 19:09:27 HKT 2026: try 90 — not reachable
+Tue Nov  3 19:09:32 HKT 2026: try 88 fail
+Tue Nov  3 19:09:41 HKT 2026: try 90 — not reachable
+Tue Nov  3 19:09:57 HKT 2026: try 91 — not reachable
+Tue Nov  3 19:10:02 HKT 2026: try 89 fail
+Tue Nov  3 19:10:11 HKT 2026: try 91 — not reachable
+Tue Nov  3 19:10:27 HKT 2026: try 92 — not reachable
+Tue Nov  3 19:10:32 HKT 2026: try 90 fail
+Tue Nov  3 19:10:41 HKT 2026: try 92 — not reachable
+Tue Nov  3 19:10:57 HKT 2026: try 93 — not reachable
+Tue Nov  3 19:11:02 HKT 2026: try 91 fail
+Tue Nov  3 19:11:11 HKT 2026: try 93 — not reachable
+Tue Nov  3 19:11:27 HKT 2026: try 94 — not reachable
+Tue Nov  3 19:11:32 HKT 2026: try 92 fail
+Tue Nov  3 19:11:41 HKT 2026: try 94 — not reachable
+Tue Nov  3 19:11:57 HKT 2026: try 95 — not reachable
+Tue Nov  3 19:12:02 HKT 2026: try 93 fail
+Tue Nov  3 19:12:11 HKT 2026: try 95 — not reachable
+Tue Nov  3 19:12:27 HKT 2026: try 96 — not reachable
+Tue Nov  3 19:12:32 HKT 2026: try 94 fail
+Tue Nov  3 19:12:41 HKT 2026: try 96 — not reachable
+Tue Nov  3 19:12:57 HKT 2026: try 97 — not reachable
+Tue Nov  3 19:13:02 HKT 2026: try 95 fail
+Tue Nov  3 19:13:11 HKT 2026: try 97 — not reachable
+Tue Nov  3 19:13:27 HKT 2026: try 98 — not reachable
+Tue Nov  3 19:13:32 HKT 2026: try 96 fail
+Tue Nov  3 19:13:41 HKT 2026: try 98 — not reachable
+Tue Nov  3 19:13:57 HKT 2026: try 99 — not reachable
+Tue Nov  3 19:14:02 HKT 2026: try 97 fail
+Tue Nov  3 19:14:11 HKT 2026: try 99 — not reachable
+Tue Nov  3 19:14:27 HKT 2026: try 100 — not reachable
+Tue Nov  3 19:14:32 HKT 2026: try 98 fail
+Tue Nov  3 19:14:41 HKT 2026: try 100 — not reachable
+Tue Nov  3 19:14:57 HKT 2026: try 101 — not reachable
+Tue Nov  3 19:15:02 HKT 2026: try 99 fail
+Tue Nov  3 19:15:11 HKT 2026: try 101 — not reachable
+Tue Nov  3 19:15:27 HKT 2026: try 102 — not reachable
+Tue Nov  3 19:15:32 HKT 2026: try 100 fail
+Tue Nov  3 19:15:41 HKT 2026: try 102 — not reachable
+Tue Nov  3 19:15:57 HKT 2026: try 103 — not reachable
+Tue Nov  3 19:16:02 HKT 2026: try 101 fail
+Tue Nov  3 19:16:11 HKT 2026: try 103 — not reachable
+Tue Nov  3 19:16:28 HKT 2026: try 104 — not reachable
+Tue Nov  3 19:16:32 HKT 2026: try 102 fail
+Tue Nov  3 19:16:42 HKT 2026: try 104 — not reachable
+Tue Nov  3 19:17:26 HKT 2026: try 105 — not reachable
+Tue Nov  3 19:17:31 HKT 2026: try 103 fail
+Tue Nov  3 19:17:40 HKT 2026: try 105 — not reachable
+Tue Nov  3 19:17:56 HKT 2026: try 106 — not reachable
+Tue Nov  3 19:18:01 HKT 2026: try 104 fail
+Tue Nov  3 19:33:26 HKT 2026: try 106 — not reachable
+Tue Nov  3 19:33:42 HKT 2026: try 107 — not reachable
+Tue Nov  3 19:33:47 HKT 2026: try 105 fail
+Tue Nov  3 19:33:56 HKT 2026: try 107 — not reachable
+Tue Nov  3 19:34:12 HKT 2026: try 108 — not reachable
+Tue Nov  3 19:34:17 HKT 2026: try 106 fail
+Tue Nov  3 19:34:26 HKT 2026: try 108 — not reachable
+Tue Nov  3 19:34:42 HKT 2026: try 109 — not reachable
+Tue Nov  3 19:34:47 HKT 2026: try 107 fail
+Tue Nov  3 19:34:56 HKT 2026: try 109 — not reachable
+Tue Nov  3 19:35:12 HKT 2026: try 110 — not reachable
+Tue Nov  3 19:35:17 HKT 2026: try 108 fail
+Tue Nov  3 19:35:26 HKT 2026: try 110 — not reachable
+Tue Nov  3 19:35:42 HKT 2026: try 111 — not reachable
+Tue Nov  3 19:35:47 HKT 2026: try 109 fail
+Tue Nov  3 19:35:56 HKT 2026: try 111 — not reachable
+Tue Nov  3 19:36:12 HKT 2026: try 112 — not reachable
+Tue Nov  3 19:36:17 HKT 2026: try 110 fail
+Tue Nov  3 19:36:26 HKT 2026: try 112 — not reachable
+Tue Nov  3 19:36:43 HKT 2026: try 113 — not reachable
+Tue Nov  3 19:36:47 HKT 2026: try 111 fail
+Tue Nov  3 19:36:56 HKT 2026: try 113 — not reachable
+Tue Nov  3 19:37:13 HKT 2026: try 114 — not reachable
+Tue Nov  3 19:37:17 HKT 2026: try 112 fail
+Tue Nov  3 19:37:27 HKT 2026: try 114 — not reachable
+Tue Nov  3 19:37:43 HKT 2026: try 115 — not reachable
+Tue Nov  3 19:37:47 HKT 2026: try 113 fail
+Tue Nov  3 19:37:57 HKT 2026: try 115 — not reachable
+Tue Nov  3 19:38:13 HKT 2026: try 116 — not reachable
+Tue Nov  3 19:38:17 HKT 2026: try 114 fail
+Tue Nov  3 19:38:27 HKT 2026: try 116 — not reachable
+Tue Nov  3 19:38:43 HKT 2026: try 117 — not reachable
+Tue Nov  3 19:38:47 HKT 2026: try 115 fail
+Tue Nov  3 19:38:57 HKT 2026: try 117 — not reachable
+Tue Nov  3 19:39:13 HKT 2026: try 118 — not reachable
+Tue Nov  3 19:39:17 HKT 2026: try 116 fail
+Tue Nov  3 19:39:27 HKT 2026: try 118 — not reachable
+Tue Nov  3 19:39:43 HKT 2026: try 119 — not reachable
+Tue Nov  3 19:39:47 HKT 2026: try 117 fail
+Tue Nov  3 19:39:57 HKT 2026: try 119 — not reachable
+Tue Nov  3 19:40:13 HKT 2026: try 120 — not reachable
+Tue Nov  3 19:40:17 HKT 2026: try 118 fail
+Tue Nov  3 19:40:27 HKT 2026: try 120 — not reachable
+Tue Nov  3 19:40:43 HKT 2026: timed out after ~60min waiting for VPN
+Tue Nov  3 19:40:47 HKT 2026: try 119 fail
+Tue Nov  3 19:40:57 HKT 2026: timed out after ~60min waiting for VPN
+Tue Nov  3 19:41:17 HKT 2026: try 120 fail
+Tue Nov  3 19:41:48 HKT 2026: timeout

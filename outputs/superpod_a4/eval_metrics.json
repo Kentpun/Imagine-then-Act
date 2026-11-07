@@ -1,0 +1,29 @@
+{
+  "ablation": {
+    "blank_image": false,
+    "shuffle_action": false,
+    "no_format_hint": false,
+    "split": "val",
+    "max_samples": 512
+  },
+  "seed": 42,
+  "finetuned": {
+    "exact_match": 0.8359375,
+    "parse_rate": 1.0,
+    "macro_f1": 0.9092833547006759,
+    "n": 512,
+    "acc_moved": 1.0,
+    "f1_moved": 1.0,
+    "acc_lifted": 1.0,
+    "f1_lifted": 1.0,
+    "acc_gripper": 1.0,
+    "f1_gripper": 1.0,
+    "acc_progress": 0.892578125,
+    "f1_progress": 0.829769784129117,
+    "acc_success_near": 0.94140625,
+    "f1_success_near": 0.7166469893742622,
+    "format_hint": false,
+    "blank_image": false,
+    "shuffle_action": false
+  }
+}

@@ -1,4 +1,5 @@
 .venv/
+.venv_local/
 .tmp_venv/
 .demo/
 __pycache__/
@@ -8,6 +9,8 @@ __pycache__/
 .DS_Store
 data/raw/
 data/processed/
+data/processed_*/
+data/microduck_raw/
 # outputs/
 *.pt
 *.bin

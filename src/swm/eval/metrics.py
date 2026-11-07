@@ -103,9 +103,43 @@ def macro_f1_from_pairs(
     return per_field
 
 
+def bootstrap_ci(
+    preds: list[str],
+    golds: list[str],
+    *,
+    key: str = "exact_match",
+    n_boot: int = 200,
+    seed: int = 42,
+    alpha: float = 0.05,
+) -> dict[str, float]:
+    """Bootstrap percentile CI for exact_match or macro_f1."""
+    import random
+
+    n = len(preds)
+    if n == 0:
+        return {"mean": 0.0, "lo": 0.0, "hi": 0.0, "n_boot": 0}
+    rng = random.Random(seed)
+    stats: list[float] = []
+    for _ in range(n_boot):
+        idx = [rng.randrange(n) for _ in range(n)]
+        p = [preds[i] for i in idx]
+        g = [golds[i] for i in idx]
+        m = summarize_predictions(p, g)
+        stats.append(float(m[key]))  # type: ignore[arg-type]
+    stats.sort()
+    lo_i = int(alpha / 2 * (n_boot - 1))
+    hi_i = int((1 - alpha / 2) * (n_boot - 1))
+    return {
+        "mean": sum(stats) / n_boot,
+        "lo": stats[lo_i],
+        "hi": stats[hi_i],
+        "n_boot": float(n_boot),
+    }
+
+
 def summarize_predictions(
-    preds: list[str], golds: list[str]
-) -> dict[str, float | int | bool]:
+    preds: list[str], golds: list[str], *, bootstrap: bool = False, seed: int = 42
+) -> dict[str, float | int | bool | dict]:
     assert len(preds) == len(golds)
     n = len(preds)
     exact = sum(float(exact_match(p, g)) for p, g in zip(preds, golds))
@@ -118,7 +152,7 @@ def summarize_predictions(
         for k, v in field_accuracy(p, g).items():
             field_sums[k] += v
     f1 = macro_f1_from_pairs(zip(preds, golds))
-    out: dict[str, float | int | bool] = {
+    out: dict[str, float | int | bool | dict] = {
         "exact_match": exact / max(1, n),
         "parse_rate": parsed / max(1, n),
         "macro_f1": float(f1["macro_f1"]),
@@ -127,4 +161,31 @@ def summarize_predictions(
     for k in FIELD_NAMES:
         out[f"acc_{k}"] = field_sums[k] / max(1, n)
         out[f"f1_{k}"] = float(f1[k])
+    if bootstrap and n > 0:
+        out["bootstrap_exact_match"] = bootstrap_ci(
+            preds, golds, key="exact_match", seed=seed
+        )
+        out["bootstrap_macro_f1"] = bootstrap_ci(
+            preds, golds, key="macro_f1", seed=seed + 1
+        )
     return out
+
+
+def summarize_by_task(
+    preds: list[str],
+    golds: list[str],
+    tasks: list[str],
+    *,
+    bootstrap: bool = False,
+    seed: int = 42,
+) -> dict[str, dict]:
+    """Per-task Layer A metrics (truncated task string as key)."""
+    buckets: dict[str, tuple[list[str], list[str]]] = defaultdict(lambda: ([], []))
+    for p, g, t in zip(preds, golds, tasks):
+        key = (t or "unknown").strip()[:120] or "unknown"
+        buckets[key][0].append(p)
+        buckets[key][1].append(g)
+    return {
+        task: summarize_predictions(ps, gs, bootstrap=bootstrap, seed=seed)
+        for task, (ps, gs) in sorted(buckets.items(), key=lambda kv: (-len(kv[1][0]), kv[0]))
+    }

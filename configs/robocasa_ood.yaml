@@ -1,0 +1,43 @@
+# Multi-task RoboCasa HF OOD eval (frozen LIBERO LoRA). Offline only.
+seed: 42
+
+paths:
+  root: .
+  raw_dir: data/raw/robocasa_ood
+  processed_dir: data/processed_robocasa_ood
+  frames_dir: data/processed_robocasa_ood/frames
+  output_dir: outputs/robocasa_ood
+
+data:
+  repos:
+    - pepijn223/atomic_4
+    - pepijn223/robocasa_PickPlaceCounterToCabinet
+    - pepijn223/robocasa_PrepareCoffee
+  max_per_task: 96
+  stride: 5
+  move_threshold: 0.01
+  lift_threshold: 0.01
+  success_near_frames: 15
+
+model:
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  load_in_4bit: false
+  freeze_vision: false
+  max_pixels: 401408
+  lora:
+    r: 16
+    alpha: 32
+    dropout: 0.05
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+train:
+  bf16: true
+  fp16: false
+  gradient_checkpointing: true
+
+eval:
+  checkpoint: outputs/superpod/checkpoint-final
+  max_samples: 1024
+  zero_shot_baseline: true
+  bootstrap: true
+  per_task: true

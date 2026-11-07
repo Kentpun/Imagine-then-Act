@@ -87,13 +87,38 @@ def label_transition(
     }
 
 
-def build_outcome_string(labels: dict[str, str]) -> str:
+_DEFAULTS = {
+    "moved": "no",
+    "lifted": "no",
+    "gripper": "hold",
+    "progress": "flat",
+    "success_near": "no",
+}
+
+
+def build_outcome_string(
+    labels: dict[str, str],
+    *,
+    active_fields: Sequence[str] | None = None,
+) -> str:
+    """Build the canonical outcome line.
+
+    If ``active_fields`` is set (A4 ablation), non-active fields are replaced
+    with fixed defaults so the model is only supervised on a subset.
+    """
+    out = dict(_DEFAULTS)
+    out.update(labels)
+    if active_fields is not None:
+        keep = {str(f) for f in active_fields}
+        for k in list(out.keys()):
+            if k not in keep:
+                out[k] = _DEFAULTS[k]
     return (
-        f"moved={labels['moved']}; "
-        f"lifted={labels['lifted']}; "
-        f"gripper={labels['gripper']}; "
-        f"progress={labels['progress']}; "
-        f"success_near={labels['success_near']}"
+        f"moved={out['moved']}; "
+        f"lifted={out['lifted']}; "
+        f"gripper={out['gripper']}; "
+        f"progress={out['progress']}; "
+        f"success_near={out['success_near']}"
     )
 
 

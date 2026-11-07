@@ -7,9 +7,9 @@ paths:
   output_dir: outputs/microduck_demo
 
 model:
-  # Part A LoRA lives in outputs/superpod/checkpoint-final (bf16, not 4-bit).
+  # Prefer Part-2 MicroDuck LoRA; LIBERO LoRA remains a fallback.
   model_id: Qwen/Qwen3-VL-2B-Instruct
-  checkpoint: outputs/superpod/checkpoint-final
+  checkpoint: outputs/microduck_semantic/checkpoint-final
   load_in_4bit: false
   freeze_vision: true
   max_pixels: 200704
@@ -37,6 +37,7 @@ planner:
   vy_values: [0.0]
   yaw_values: [-0.5, -0.25, 0.0, 0.25, 0.5]
   max_candidates: 24
+  include_kick: true
 
 mqtt:
   # Point at microduck_demo_part1 .demo/session.env after bootstrap

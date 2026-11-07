@@ -4,6 +4,10 @@ Lightweight **semantic world model** for tabletop manipulation: a LoRA-tuned VLM
 
 Designed for a **single GPU** and the public **LIBERO** dataset.
 
+**Two-part project**
+- **Part 1 (science):** LIBERO semantic LoRA + Imagine-then-Act, expanded eval/ablations, multi-task RoboCasa OOD (`docs/EVAL.md`).
+- **Part 2 (MicroDuck):** synthetic semantic logs + optional YOLO detector from `pngwn/microduck-detection-dataset` + multitask CCTV demo (`docs/PART2_MICRODUCK.md`).
+
 ## Quick start
 
 ```bash

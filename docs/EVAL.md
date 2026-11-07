@@ -54,3 +54,20 @@ Oracle ranking uses **action-only** semantic labels (same rules as dataset label
 ```bash
 CHECKPOINT=outputs/superpod/checkpoint-final bash scripts/run_ablations.sh configs/superpod.yaml
 ```
+
+## SuperPOD (Part 1 science)
+
+No retrain required for main LoRA — uses existing `outputs/superpod/checkpoint-final`.
+
+```bash
+# Expanded LIBERO eval (n=2048, bootstrap, per-task, A1–A3, A6, Layer B, qualitative)
+cd ~/semantic-world-model && sbatch scripts/superpod_part1_eval.sbatch
+
+# Optional A4 fewer-field retrain
+sbatch scripts/superpod_a4.sbatch
+
+# Multi-task RoboCasa OOD (atomic_4 + extras, frozen LIBERO LoRA)
+sbatch scripts/superpod_robocasa_ood.sbatch
+```
+
+See also `docs/PART2_MICRODUCK.md` for MicroDuck synthetic VLA.

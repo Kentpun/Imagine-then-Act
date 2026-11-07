@@ -1,0 +1,65 @@
+# MicroDuck-domain semantic LoRA (Part 2).
+seed: 42
+
+paths:
+  root: .
+  raw_dir: data/microduck_raw
+  processed_dir: data/processed_microduck
+  frames_dir: data/processed_microduck/frames
+  output_dir: outputs/microduck_semantic
+
+data:
+  val_ratio: 0.15
+  move_threshold: 0.05
+  lift_threshold: 0.01
+  success_near_frames: 5
+
+model:
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  load_in_4bit: false
+  freeze_vision: false
+  max_pixels: 200704
+  lora:
+    r: 16
+    alpha: 32
+    dropout: 0.05
+    target_modules:
+      - q_proj
+      - k_proj
+      - v_proj
+      - o_proj
+      - gate_proj
+      - up_proj
+      - down_proj
+
+train:
+  num_epochs: 2
+  batch_size: 2
+  grad_accum: 4
+  learning_rate: 2.0e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.03
+  max_seq_length: 512
+  max_train_samples: null
+  logging_steps: 10
+  save_steps: 200
+  eval_steps: 200
+  gradient_checkpointing: true
+  bf16: true
+  fp16: false
+  dataloader_num_workers: 4
+  resume_from: null
+
+eval:
+  checkpoint: outputs/microduck_semantic/checkpoint-final
+  max_samples: 512
+  zero_shot_baseline: true
+  bootstrap: true
+  per_task: true
+
+planner:
+  vx_values: [0.0, 0.15, 0.25]
+  vy_values: [0.0]
+  yaw_values: [-0.5, 0.0, 0.5]
+  max_candidates: 16
+  include_kick: true
