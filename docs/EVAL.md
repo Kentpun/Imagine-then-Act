@@ -55,6 +55,8 @@ Oracle ranking uses **action-only** semantic labels (same rules as dataset label
 CHECKPOINT=outputs/superpod/checkpoint-final bash scripts/run_ablations.sh configs/superpod.yaml
 ```
 
+For **stronger** single-factor ablations (no-action retrain, freeze-vision, matched fewer-fields, planner score terms), see `docs/STRONG_ABLATIONS.md`.
+
 ## SuperPOD (Part 1 science)
 
 No retrain required for main LoRA — uses existing `outputs/superpod/checkpoint-final`.

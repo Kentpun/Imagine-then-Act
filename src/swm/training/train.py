@@ -52,9 +52,20 @@ def main() -> None:
             f"Missing/empty {train_path}. Run scripts/prepare_dataset.py first."
         )
 
-    train_ds: torch.utils.data.Dataset = SemanticTransitionDataset(train_path, frames)
+    include_action = bool(cfg.get("data", {}).get("include_action", True))
+    if not include_action:
+        print(
+            "Ablation: training WITHOUT action in the prompt "
+            "(data.include_action=false)",
+            flush=True,
+        )
+    train_ds: torch.utils.data.Dataset = SemanticTransitionDataset(
+        train_path, frames, include_action=include_action
+    )
     if val_path.is_file() and val_path.stat().st_size > 0:
-        val_ds: torch.utils.data.Dataset = SemanticTransitionDataset(val_path, frames)
+        val_ds: torch.utils.data.Dataset = SemanticTransitionDataset(
+            val_path, frames, include_action=include_action
+        )
     else:
         val_ds = train_ds
     if len(train_ds) == 0:

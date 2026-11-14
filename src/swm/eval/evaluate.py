@@ -45,6 +45,7 @@ def collect_predictions(
     format_hint: bool = False,
     blank_image: bool = False,
     shuffle_action: bool = False,
+    omit_action: bool = False,
     seed: int = 42,
 ) -> tuple[list[str], list[str], list[str]]:
     rng = random.Random(seed)
@@ -58,7 +59,12 @@ def collect_predictions(
         action = list(sample["action"]) if sample.get("action") else [0.0] * 7
         if shuffle_action:
             action = _shuffle_action(action, rng)
-        prompt = build_prompt(sample["task"], action, format_hint=format_hint)
+        prompt = build_prompt(
+            sample["task"],
+            action,
+            format_hint=format_hint,
+            include_action=not omit_action,
+        )
         pred = generate_outcome(
             model,
             processor,
@@ -82,6 +88,7 @@ def run_model(
     format_hint: bool = False,
     blank_image: bool = False,
     shuffle_action: bool = False,
+    omit_action: bool = False,
     seed: int = 42,
     bootstrap: bool = False,
     per_task: bool = False,
@@ -94,12 +101,14 @@ def run_model(
         format_hint=format_hint,
         blank_image=blank_image,
         shuffle_action=shuffle_action,
+        omit_action=omit_action,
         seed=seed,
     )
     metrics = summarize_predictions(preds, golds, bootstrap=bootstrap, seed=seed)
     metrics["format_hint"] = format_hint
     metrics["blank_image"] = blank_image
     metrics["shuffle_action"] = shuffle_action
+    metrics["omit_action"] = omit_action
     if per_task:
         metrics["per_task"] = summarize_by_task(
             preds, golds, tasks, bootstrap=False, seed=seed
@@ -139,9 +148,14 @@ def parse_args() -> argparse.Namespace:
         help="Ablation A2: shuffle action channels at eval time.",
     )
     p.add_argument(
+        "--omit_action",
+        action="store_true",
+        help="Strong action ablation: drop the action line from the prompt.",
+    )
+    p.add_argument(
         "--no_format_hint",
         action="store_true",
-        help="Ablation A6: zero-shot without output format hint.",
+        help="Prompt control: zero-shot without output format hint.",
     )
     p.add_argument(
         "--bootstrap",
@@ -183,7 +197,12 @@ def main() -> None:
         else:
             raise SystemExit(f"Split not found: {split_path}")
 
-    ds = SemanticTransitionDataset(split_path, frames)
+    omit_action = bool(
+        args.omit_action or (not cfg.get("data", {}).get("include_action", True))
+    )
+    ds = SemanticTransitionDataset(
+        split_path, frames, include_action=not omit_action
+    )
     max_samples = int(args.max_samples or cfg["eval"].get("max_samples", 512))
     out_dir = ensure_dir(cfg["paths"]["output_dir"])
     seed = int(cfg.get("seed", 42))
@@ -193,6 +212,7 @@ def main() -> None:
     ablation = {
         "blank_image": bool(args.blank_image),
         "shuffle_action": bool(args.shuffle_action),
+        "omit_action": omit_action,
         "no_format_hint": bool(args.no_format_hint),
         "split": args.split,
         "max_samples": max_samples,
@@ -215,6 +235,7 @@ def main() -> None:
             format_hint=hint,
             blank_image=args.blank_image,
             shuffle_action=args.shuffle_action,
+            omit_action=omit_action,
             seed=seed,
             bootstrap=bootstrap,
             per_task=per_task,
@@ -234,6 +255,7 @@ def main() -> None:
             max_samples,
             blank_image=args.blank_image,
             shuffle_action=args.shuffle_action,
+            omit_action=omit_action,
             seed=seed,
             bootstrap=bootstrap,
             per_task=per_task,
@@ -248,6 +270,8 @@ def main() -> None:
             bits.append("blank_image")
         if args.shuffle_action:
             bits.append("shuffle_action")
+        if omit_action:
+            bits.append("omit_action")
         if args.no_format_hint:
             bits.append("no_format_hint")
         tag = "_".join(bits) if bits != ["val"] else ""

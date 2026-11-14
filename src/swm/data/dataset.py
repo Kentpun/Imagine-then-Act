@@ -12,9 +12,16 @@ from swm.utils.io import load_jsonl
 
 
 class SemanticTransitionDataset(Dataset):
-    def __init__(self, jsonl_path: str | Path, frames_root: str | Path | None = None):
+    def __init__(
+        self,
+        jsonl_path: str | Path,
+        frames_root: str | Path | None = None,
+        *,
+        include_action: bool = True,
+    ):
         self.rows = load_jsonl(jsonl_path)
         self.frames_root = Path(frames_root) if frames_root else None
+        self.include_action = bool(include_action)
 
     def __len__(self) -> int:
         return len(self.rows)
@@ -27,7 +34,16 @@ class SemanticTransitionDataset(Dataset):
         image = Image.open(image_path).convert("RGB")
         # Action-command rows carry their own prompt/answer so the same
         # trainer can learn instruction -> action instead of action -> outcome.
-        prompt = row.get("prompt") or build_prompt(row["task"], row["action"])
+        # For the no-action ablation, ignore any stored prompt and rebuild
+        # without the action line so train/eval stay consistent.
+        if "prompt" in row and self.include_action:
+            prompt = row["prompt"]
+        else:
+            prompt = build_prompt(
+                row["task"],
+                row.get("action", []),
+                include_action=self.include_action,
+            )
         answer = row.get("answer") or row["outcome"]
         return {
             "image": image,

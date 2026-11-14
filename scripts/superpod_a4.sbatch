@@ -64,5 +64,6 @@ PY
 fi
 
 python -m swm.training.train --config "${CONFIG}"
-python -m swm.eval.evaluate --config "${CONFIG}" --finetuned_only --max_samples 512
-echo "A4 done → outputs/superpod_a4/"
+python -m swm.eval.evaluate --config "${CONFIG}" --finetuned_only \
+  --bootstrap --per_task --max_samples 2048 --tag a4_fewer_fields
+echo "A4 done → outputs/superpod_a4/ (eval n=2048)"

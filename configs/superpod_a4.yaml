@@ -1,5 +1,6 @@
-# A4 ablation: train with fewer semantic fields (moved, progress, success_near only).
-# Outcome strings still use the full schema; unused fields are fixed defaults.
+# A4 ablation: supervise fewer semantic fields (moved, progress, success_near).
+# Matched to the main run: same epochs, full train set, eval n=2048.
+# Outcome strings keep the full schema; unused fields are fixed defaults.
 seed: 42
 
 paths:
@@ -19,8 +20,8 @@ data:
   move_threshold: 0.01
   lift_threshold: 0.01
   success_near_frames: 15
-  # A4: only supervise these fields when preparing JSONL
   active_fields: [moved, progress, success_near]
+  include_action: true
   image_key_candidates:
     - observation.images.image
     - observation.images.image2
@@ -47,14 +48,14 @@ model:
       - down_proj
 
 train:
-  num_epochs: 1
+  num_epochs: 2
   batch_size: 2
   grad_accum: 8
   learning_rate: 2.0e-4
   weight_decay: 0.01
   warmup_ratio: 0.03
   max_seq_length: 512
-  max_train_samples: 8000
+  max_train_samples: null
   logging_steps: 20
   save_steps: 500
   eval_steps: 500
@@ -66,6 +67,15 @@ train:
 
 eval:
   checkpoint: outputs/superpod_a4/checkpoint-final
-  max_samples: 512
-  planner_max_samples: 32
+  max_samples: 2048
+  planner_max_samples: 64
   zero_shot_baseline: false
+  bootstrap: true
+  per_task: true
+
+planner:
+  grid_xy: [-0.05, -0.025, 0.0, 0.025, 0.05]
+  dz_values: [0.0, 0.02]
+  gripper_values: [0.0, 1.0]
+  max_horizon: 1
+  max_candidates: 16

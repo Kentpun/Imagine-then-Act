@@ -122,20 +122,30 @@ def build_outcome_string(
     )
 
 
-def score_from_outcome(outcome: str) -> float:
-    """Map a predicted outcome string to a scalar for planning."""
+def score_from_outcome(
+    outcome: str,
+    *,
+    disabled_fields: Sequence[str] | None = None,
+) -> float:
+    """Map a predicted outcome string to a scalar for planning.
+
+    ``disabled_fields`` ablates score terms one-at-a-time (e.g. drop
+    ``progress`` or ``success_near``) while keeping the same VLM predictions.
+    """
     text = outcome.lower().replace(" ", "")
+    disabled = {str(f).lower() for f in (disabled_fields or [])}
     score = 0.0
-    if "progress=up" in text:
-        score += 2.0
-    if "progress=down" in text:
-        score -= 1.0
-    if "lifted=yes" in text:
+    if "progress" not in disabled:
+        if "progress=up" in text:
+            score += 2.0
+        if "progress=down" in text:
+            score -= 1.0
+    if "lifted" not in disabled and "lifted=yes" in text:
         score += 1.5
-    if "success_near=yes" in text:
+    if "success_near" not in disabled and "success_near=yes" in text:
         score += 3.0
-    if "moved=yes" in text:
+    if "moved" not in disabled and "moved=yes" in text:
         score += 0.25
-    if "gripper=close" in text:
+    if "gripper" not in disabled and "gripper=close" in text:
         score += 0.1
     return score
