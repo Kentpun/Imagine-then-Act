@@ -78,6 +78,7 @@ class MicroDuckImaginationPlanner:
         ]
         note = "skill=kick" if is_kick else f"locomotion vx={vx:.2f}, yaw={yaw:.2f}"
         prompt = libero_prompt(f"{task.strip()} ({note})", libero_action)
+        max_new = int(self.cfg.get("planner", {}).get("max_new_tokens", 24))
         return generate_outcome(
             self.model,
             self.processor,
@@ -85,14 +86,27 @@ class MicroDuckImaginationPlanner:
             task,
             libero_action,
             prompt=prompt,
+            max_new_tokens=max_new,
         )
 
     def rank(
-        self, image: Image.Image, task: str, actions: list[list[float]] | None = None
+        self,
+        image: Image.Image,
+        task: str,
+        actions: list[list[float]] | None = None,
+        *,
+        progress: bool = False,
     ) -> list[RankedAction]:
         acts = actions or self.candidates
         ranked: list[RankedAction] = []
-        for a in acts:
+        for i, a in enumerate(acts):
+            if progress:
+                label = (
+                    "KICK"
+                    if len(a) > 2 and abs(float(a[2]) - 9.0) < 1e-6
+                    else f"vx={float(a[0]):.2f} yaw={float(a[2]):+.2f}"
+                )
+                print(f"  imagining [{i+1}/{len(acts)}] {label} ...", flush=True)
             outcome = self._predict(image, task, a)
             ranked.append(
                 RankedAction(

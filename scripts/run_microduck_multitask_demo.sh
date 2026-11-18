@@ -12,9 +12,10 @@ if [[ ! -d "$CKPT" ]]; then
   CKPT="outputs/superpod/checkpoint-final"
   echo "MicroDuck LoRA missing; falling back to LIBERO LoRA at $CKPT"
 fi
-CONFIG="${CONFIG:-configs/microduck_train.yaml}"
+# Prefer the Mac-fast demo grid; train.yaml keeps denser candidates for offline eval.
+CONFIG="${CONFIG:-configs/microduck_demo.yaml}"
 if [[ ! -f "$CONFIG" ]]; then
-  CONFIG=configs/microduck_demo.yaml
+  CONFIG=configs/microduck_train.yaml
 fi
 
 DET_ARGS=()

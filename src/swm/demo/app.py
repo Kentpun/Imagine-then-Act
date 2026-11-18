@@ -37,7 +37,16 @@ This is model-based planning, not ReAct-style chain-of-thought.
 """
     )
 
-    config_path = st.sidebar.text_input("Config", "configs/default.yaml")
+    default_cfg = "configs/default.yaml"
+    if not (Path("data/processed") / "val.jsonl").is_file():
+        # Full LIBERO val split is usually prepared on SuperPOD; fall back to
+        # local smoke frames so the demo still launches on a laptop.
+        if Path("configs/demo_local.yaml").is_file():
+            default_cfg = "configs/demo_local.yaml"
+        elif Path("configs/smoke.yaml").is_file():
+            default_cfg = "configs/smoke.yaml"
+
+    config_path = st.sidebar.text_input("Config", default_cfg)
     checkpoint = st.sidebar.text_input(
         "Checkpoint", "outputs/superpod/checkpoint-final"
     )
@@ -49,8 +58,16 @@ This is model-based planning, not ReAct-style chain-of-thought.
         st.stop()
 
     cfg, controller = load_runtime(config_path, checkpoint)
+    val_path = Path(cfg["paths"]["processed_dir"]) / "val.jsonl"
+    if not val_path.is_file():
+        st.error(
+            f"Missing `{val_path}`. Either sync LIBERO processed data from "
+            "SuperPOD, or set Config to `configs/demo_local.yaml` / "
+            "`configs/smoke.yaml`."
+        )
+        st.stop()
     ds = SemanticTransitionDataset(
-        Path(cfg["paths"]["processed_dir"]) / "val.jsonl",
+        val_path,
         Path(cfg["paths"]["frames_dir"]),
     )
     if len(ds) == 0:

@@ -28,16 +28,19 @@ def build_model_and_processor(cfg: dict[str, Any], *, for_training: bool = True)
 
     processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
     if hasattr(processor, "image_processor") and "max_pixels" in model_cfg:
-        # Prefer size dict when available (transformers v5+); keep max_pixels fallback.
+        # Qwen VL: size.longest/shortest_edge == max/min pixel budget (not edge px).
         ip = processor.image_processor
         max_pixels = int(model_cfg["max_pixels"])
-        if hasattr(ip, "size") and isinstance(getattr(ip, "size", None), dict):
+        min_pixels = int(model_cfg.get("min_pixels", max(256, max_pixels // 4)))
+        if hasattr(ip, "size"):
             ip.size = {
                 "longest_edge": max_pixels,
-                "shortest_edge": max(1024, max_pixels // 4),
+                "shortest_edge": min_pixels,
             }
-        else:
+        if hasattr(ip, "max_pixels"):
             ip.max_pixels = max_pixels
+        if hasattr(ip, "min_pixels"):
+            ip.min_pixels = min_pixels
 
     quant_config = None
     if model_cfg.get("load_in_4bit", False):
@@ -133,6 +136,14 @@ def load_finetuned(cfg: dict[str, Any], checkpoint: str):
     """Load base model + LoRA adapter for inference."""
     model, processor = build_model_and_processor(cfg, for_training=False)
     model = PeftModel.from_pretrained(model, checkpoint)
+    # Merge LoRA into base weights for faster Mac/CPU demos when requested.
+    if cfg.get("planner", {}).get("merge_lora", False) or cfg.get("model", {}).get(
+        "merge_lora", False
+    ):
+        print("Merging LoRA adapters into base weights for faster inference...", flush=True)
+        model = model.merge_and_unload()
+    if hasattr(model, "config"):
+        model.config.use_cache = True
     model.eval()
     return model, processor
 

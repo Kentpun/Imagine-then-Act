@@ -38,6 +38,30 @@ _VX = 0.25
 _YAW = 0.50
 
 
+def _action_command_for_velocity(vx: float, yaw: float) -> str:
+    """Map Imagine-then-Act (vx,yaw) to the VLA one-liner CircleKeeper understands.
+
+    The MuJoCo --vision-ball runner prefers this format for keep-zone; raw MQTT
+    velocity is only a fallback when the action_command is unparseable.
+    """
+    if abs(vx) <= 1e-6:
+        return "target_visible=yes; action=HOLD; magnitude=none; gripper=hold"
+    if yaw > 0.2:
+        return "target_visible=yes; action=MOVE_Y_POSITIVE; magnitude=medium; gripper=hold"
+    if yaw < -0.2:
+        return "target_visible=yes; action=MOVE_Y_NEGATIVE; magnitude=medium; gripper=hold"
+    return "target_visible=yes; action=MOVE_X_POSITIVE; magnitude=medium; gripper=hold"
+
+
+def _demo_velocity(vx: float, yaw: float) -> tuple[float, float]:
+    """Walking policy ignores weak forward+turn; snap to verified demo speeds."""
+    if abs(vx) <= 1e-6:
+        return 0.0, 0.0
+    if abs(yaw) > 0.2:
+        return _VX, _YAW if yaw > 0 else -_YAW
+    return _VX, 0.0
+
+
 def _velocity_for_action(action_command: str) -> tuple[float, float]:
     fields = parse_action_command(action_command)
     if fields is None or not fields.get("target_visible"):
@@ -116,6 +140,7 @@ def run_imagine_loop(
     task_note: str,
     detector_weights: Path | None = None,
     hud_path: Path | None = None,
+    replan_every_s: float | None = None,
 ) -> None:
     """Imagine-then-Act: rank velocity candidates with the semantic world model."""
     from swm.microduck.detector import DuckDetector, draw_detection
@@ -126,6 +151,8 @@ def run_imagine_loop(
     if not checkpoint.exists():
         raise SystemExit(f"Semantic checkpoint not found: {checkpoint}")
     cfg = load_config(str(config_path))
+    if replan_every_s is None:
+        replan_every_s = float(cfg.get("planner", {}).get("replan_every_s", 4.0))
     print(f"Loading semantic world model (Imagine-then-Act) from {checkpoint}")
     model, processor = load_finetuned(cfg, str(checkpoint))
     planner = MicroDuckImaginationPlanner(cfg, model=model, processor=processor, mock=False)
@@ -135,6 +162,7 @@ def run_imagine_loop(
     print("Mode: IMAGINE candidate (vx,yaw[/kick]) outcomes → ACT best command")
     print(f"Task: {task_note}")
     print(f"Candidates: {len(planner.candidates)}")
+    print(f"Replan every: {replan_every_s:.1f}s (keeps last ACT between ranks)")
     print(f"Publishing to {session.topic} on {session.host}:{session.port}")
     print(f"Waiting for frames at {frame_path}")
 
@@ -142,6 +170,7 @@ def run_imagine_loop(
     lock = threading.Lock()
     stop = threading.Event()
     seen_mtime: float | None = None
+    last_plan_t = 0.0
 
     with MqttVelocityClient(session, dry_run=False) as client:
         thread = threading.Thread(
@@ -154,19 +183,28 @@ def run_imagine_loop(
                 if image is None:
                     time.sleep(0.05)
                     continue
+                now = time.monotonic()
+                # Always refresh HUD / detection; only re-rank on the cadence.
                 det = detector.best(image)
                 if hud_path is not None:
                     draw_detection(image, det).save(hud_path)
+                if last_plan_t > 0.0 and (now - last_plan_t) < replan_every_s:
+                    time.sleep(0.05)
+                    continue
                 print("=== CCTV / DETECT ===", flush=True)
                 if det:
                     print(
-                        f"  duck box cx={det.cx:.2f} cy={det.cy:.2f} score={det.score:.2f}",
+                        f"  duck box cx={det.cx:.2f} cy={det.cy:.2f} "
+                        f"score={det.score:.2f} label={det.label}",
                         flush=True,
                     )
                 else:
                     print("  duck not detected (heuristic/YOLO miss)", flush=True)
-                print("=== IMAGINE ===", flush=True)
-                ranked = planner.rank(image, task_note)
+                print(
+                    f"=== IMAGINE === ranking {len(planner.candidates)} candidates ===",
+                    flush=True,
+                )
+                ranked = planner.rank(image, task_note, progress=True)
                 for i, item in enumerate(ranked[:5]):
                     a = item.action
                     label = "KICK" if abs(float(a[2]) - 9.0) < 1e-6 else f"vx={a[0]:.2f} yaw={a[2]:+.2f}"
@@ -182,19 +220,21 @@ def run_imagine_loop(
                     action_command = "skill=kick"
                     print(f"=== ACT === KICK score={best.score:.2f}", flush=True)
                 else:
-                    vx, yaw = float(best.action[0]), float(best.action[2])
-                    action_command = (
-                        f"imagined_best; vx={vx:.2f}; yaw={yaw:.2f}; "
-                        f"outcome={best.outcome[:120]}"
-                    )
+                    raw_vx = float(best.action[0])
+                    raw_yaw = float(best.action[2])
+                    vx, yaw = _demo_velocity(raw_vx, raw_yaw)
+                    # VLA one-liner so CircleKeeper (vision-ball) actually walks.
+                    action_command = _action_command_for_velocity(vx, yaw)
                     print(
-                        f"=== ACT === vx={vx:.2f} yaw={yaw:+.2f} score={best.score:.2f}",
+                        f"=== ACT === vx={vx:.2f} yaw={yaw:+.2f} score={best.score:.2f} "
+                        f"cmd={action_command}",
                         flush=True,
                     )
                 with lock:
                     state["vx"] = vx
                     state["yaw"] = yaw
                     state["action_command"] = action_command
+                last_plan_t = time.monotonic()
         finally:
             with lock:
                 state["vx"] = 0.0
@@ -296,6 +336,12 @@ def main() -> None:
         help="Config for imagine mode (candidate velocities).",
     )
     parser.add_argument(
+        "--replan-every",
+        type=float,
+        default=None,
+        help="Seconds between full Imagine ranks (default: config planner.replan_every_s).",
+    )
+    parser.add_argument(
         "--task",
         default="keep the orange ball inside the green circle",
     )
@@ -344,6 +390,7 @@ def main() -> None:
             task_note=task_note,
             detector_weights=args.detector_weights if args.detector_weights.is_file() else None,
             hud_path=args.hud,
+            replan_every_s=args.replan_every,
         )
     else:
         ckpt = args.checkpoint or DEFAULT_ACTION_CKPT

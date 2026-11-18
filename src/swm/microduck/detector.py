@@ -1,7 +1,8 @@
 """CCTV duck detector — YOLO weights from pngwn/microduck-detection-dataset.
 
-Falls back to a simple orange/cream color blob heuristic if ultralytics / weights
-are unavailable (keeps demos runnable without a trained detector).
+Falls back to a bright low-sat blob heuristic tuned for the MuJoCo overhead
+view (tiny white MicroDuck on a blue checkerboard). YOLO miss also falls back
+so demos stay usable under domain shift.
 """
 
 from __future__ import annotations
@@ -39,7 +40,9 @@ class DuckDetector:
 
     def detect(self, image: Image.Image) -> list[Detection]:
         if self._model is not None:
-            return self._detect_yolo(image)
+            dets = self._detect_yolo(image)
+            if dets:
+                return dets
         return self._detect_heuristic(image)
 
     def best(self, image: Image.Image) -> Detection | None:
@@ -67,32 +70,97 @@ class DuckDetector:
         return out
 
     def _detect_heuristic(self, image: Image.Image) -> list[Detection]:
-        """Rough cream/white blob for sim ducks on green floors."""
+        """Bright low-sat MicroDuck body on the blue sim floor.
+
+        Overhead zone frames only have ~20 pure-white pixels on the robot, so
+        we cluster high-threshold candidates instead of taking a global bbox.
+        """
         arr = np.asarray(image.convert("RGB"), dtype=np.float32)
         h, w, _ = arr.shape
-        # bright / low-saturation pixels
+        r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
         mx = arr.max(axis=2)
         mn = arr.min(axis=2)
         sat = (mx - mn) / (mx + 1e-6)
-        mask = (mx > 160) & (sat < 0.35)
-        ys, xs = np.where(mask)
-        if len(xs) < 50:
-            return []
-        x0, x1 = int(xs.min()), int(xs.max())
-        y0, y1 = int(ys.min()), int(ys.max())
-        bw = (x1 - x0) / max(1, w)
-        bh = (y1 - y0) / max(1, h)
-        if bw < 0.02 or bh < 0.02:
-            return []
-        return [
-            Detection(
-                cx=((x0 + x1) / 2) / w,
-                cy=((y0 + y1) / 2) / h,
-                w=bw,
-                h=bh,
-                score=0.4,
-            )
-        ]
+
+        for thr, sat_t, minpix in (
+            (220, 0.25, 8),
+            (200, 0.30, 10),
+            (185, 0.35, 12),
+            (165, 0.40, 18),
+        ):
+            mask = (mx > thr) & (sat < sat_t)
+            # Drop green circle posts and orange/yellow ball highlights.
+            mask &= ~((g > r + 25) & (g > b + 15) & (g > 90))
+            mask &= ~((r > 145) & (r > g + 25) & (r > b + 35) & (g < 170))
+            ys, xs = np.where(mask)
+            if len(xs) < minpix:
+                continue
+            if len(xs) > 400:
+                vals = mx[ys, xs]
+                keep = vals >= np.percentile(vals, 70)
+                ys, xs = ys[keep], xs[keep]
+            best: tuple[int, Detection] | None = None
+            for cys, cxs in _cluster_points(ys, xs, gap=4):
+                area = int(len(cxs))
+                if area < minpix:
+                    continue
+                bw = float((int(cxs.max()) - int(cxs.min()) + 1) / w)
+                bh = float((int(cys.max()) - int(cys.min()) + 1) / h)
+                if bw > 0.35 or bh > 0.35 or bw < 0.008 or bh < 0.008:
+                    continue
+                box_area = max(
+                    1,
+                    (int(cxs.max()) - int(cxs.min()) + 1)
+                    * (int(cys.max()) - int(cys.min()) + 1),
+                )
+                dens = area / float(box_area)
+                if dens < 0.12:
+                    continue
+                det = Detection(
+                    cx=float(cxs.mean() / w),
+                    cy=float(cys.mean() / h),
+                    w=float(max(bw, 0.04)),
+                    h=float(max(bh, 0.04)),
+                    score=float(min(0.85, 0.35 + area / 200.0)),
+                )
+                if best is None or area > best[0]:
+                    best = (area, det)
+            if best is not None:
+                return [best[1]]
+        return []
+
+
+def _cluster_points(
+    ys: np.ndarray, xs: np.ndarray, *, gap: int = 4
+) -> list[tuple[np.ndarray, np.ndarray]]:
+    """Greedy proximity clusters for sparse bright pixels."""
+    if len(xs) == 0:
+        return []
+    order = np.argsort(ys.astype(np.int64) * 100_000 + xs.astype(np.int64))
+    ys = ys[order]
+    xs = xs[order]
+    used = np.zeros(len(xs), dtype=bool)
+    clusters: list[tuple[np.ndarray, np.ndarray]] = []
+    for i in range(len(xs)):
+        if used[i]:
+            continue
+        members = [i]
+        used[i] = True
+        head = 0
+        while head < len(members):
+            j = members[head]
+            head += 1
+            yj = int(ys[j])
+            xj = int(xs[j])
+            for k in range(len(xs)):
+                if used[k]:
+                    continue
+                if abs(int(ys[k]) - yj) <= gap and abs(int(xs[k]) - xj) <= gap:
+                    used[k] = True
+                    members.append(k)
+        idx = np.asarray(members, dtype=np.int64)
+        clusters.append((ys[idx], xs[idx]))
+    return clusters
 
 
 def draw_detection(image: Image.Image, det: Detection | None) -> Image.Image:
@@ -108,17 +176,19 @@ def draw_detection(image: Image.Image, det: Detection | None) -> Image.Image:
     x1 = int((det.cx + det.w / 2) * w)
     y1 = int((det.cy + det.h / 2) * h)
     draw.rectangle([x0, y0, x1, y1], outline=(255, 64, 0), width=3)
-    draw.text((x0, max(0, y0 - 12)), f"duck {det.score:.2f}", fill=(255, 64, 0))
+    draw.text((x0, max(0, y0 - 12)), f"{det.label} {det.score:.2f}", fill=(255, 64, 0))
     return out
 
 
 def ball_centroid_heuristic(image: Image.Image) -> tuple[float, float] | None:
-    """Normalized (cx, cy) of orange ball if visible."""
+    """Normalized (cx, cy) of orange/yellow ball if visible."""
     arr = np.asarray(image.convert("RGB"), dtype=np.float32)
     r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
-    mask = (r > 140) & (g < 120) & (b < 100) & (r > g + 30)
+    orange = (r > 140) & (g < 120) & (b < 100) & (r > g + 30)
+    yellow = (r > 150) & (g > 110) & (b < 120) & (r + g > 2 * b + 40) & (r > b + 40)
+    mask = orange | yellow
     ys, xs = np.where(mask)
-    if len(xs) < 30:
+    if len(xs) < 4:
         return None
     h, w = arr.shape[:2]
     return float(xs.mean() / w), float(ys.mean() / h)

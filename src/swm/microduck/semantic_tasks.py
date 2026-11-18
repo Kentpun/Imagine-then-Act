@@ -12,8 +12,8 @@ TaskKind = Literal["walk_ab", "kick_goal", "keep_zone", "conditional"]
 TASK_PROMPTS: dict[TaskKind, str] = {
     "walk_ab": "walk from zone A to zone B",
     "kick_goal": "kick the orange ball into the goal",
-    "keep_zone": "keep the orange ball inside the small green zone",
-    "conditional": "if the orange ball is outside the zone then push it in else hold",
+    "keep_zone": "keep the orange ball inside the green circle",
+    "conditional": "if the orange ball is outside the circle then push it in else hold",
 }
 
 
