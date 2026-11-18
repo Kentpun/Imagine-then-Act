@@ -83,6 +83,15 @@ def score_from_outcome(outcome: str) -> float:
         score += 2.0
     if "lifted=yes" in text:
         score += 0.25
+    # MicroDuck semantic fields from Part-2 LoRA.
+    if "ball_in_zone=yes" in text:
+        score += 2.5
+    if "facing_goal=yes" in text:
+        score += 1.0
+    if "skill=kick" in text:
+        score += 1.5
+    if "skill=hold" in text and "ball_in_zone=yes" in text:
+        score += 1.0
     return score
 
 

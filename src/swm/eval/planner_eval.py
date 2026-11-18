@@ -133,12 +133,21 @@ def score_random(
 
 
 def score_heuristic(
-    actions: list[list[float]], label_cfg: LabelConfig
+    actions: list[list[float]],
+    label_cfg: LabelConfig,
+    *,
+    disabled_fields: Sequence[str] | None = None,
 ) -> list[ScoredAction]:
     out = []
     for a in actions:
         outcome = oracle_outcome_from_action(a, label_cfg)
-        out.append(ScoredAction(action=a, score=score_from_outcome(outcome), outcome=outcome))
+        out.append(
+            ScoredAction(
+                action=a,
+                score=score_from_outcome(outcome, disabled_fields=disabled_fields),
+                outcome=outcome,
+            )
+        )
     return out
 
 
@@ -149,12 +158,17 @@ def score_vlm(
     processor,
     image: Image.Image,
     task: str,
+    disabled_fields: Sequence[str] | None = None,
 ) -> list[ScoredAction]:
     out = []
     for a in actions:
         outcome = generate_outcome(model, processor, image, task, a)
         out.append(
-            ScoredAction(action=a, score=score_from_outcome(outcome), outcome=outcome)
+            ScoredAction(
+                action=a,
+                score=score_from_outcome(outcome, disabled_fields=disabled_fields),
+                outcome=outcome,
+            )
         )
     return out
 
@@ -269,6 +283,21 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Skip B2 (faster; still runs B0/B1/B3).",
     )
+    p.add_argument(
+        "--disable_score_fields",
+        type=str,
+        default="",
+        help=(
+            "Planner score ablation: comma-separated fields to drop from "
+            "score_from_outcome (e.g. progress or success_near)."
+        ),
+    )
+    p.add_argument(
+        "--tag",
+        type=str,
+        default="",
+        help="Optional suffix for planner_metrics filename.",
+    )
     return p.parse_args()
 
 
@@ -277,6 +306,9 @@ def main() -> None:
     cfg = load_config(args.config)
     set_seed(int(cfg.get("seed", 42)))
     seed = int(cfg.get("seed", 42))
+    disabled_fields = [
+        x.strip() for x in args.disable_score_fields.split(",") if x.strip()
+    ]
 
     processed = Path(cfg["paths"]["processed_dir"])
     frames = Path(cfg["paths"]["frames_dir"])
@@ -305,7 +337,9 @@ def main() -> None:
     scorers: dict[str, Callable[[list[list[float]], Image.Image, str], list[ScoredAction]]] = {
         # B0 is sampled inside evaluate_split with a per-frame RNG.
         "B0_random": lambda acts, _img, _task: score_random(acts, random.Random(0)),
-        "B1_heuristic": lambda acts, _img, _task: score_heuristic(acts, label_cfg),
+        "B1_heuristic": lambda acts, _img, _task: score_heuristic(
+            acts, label_cfg, disabled_fields=disabled_fields
+        ),
     }
 
     zs_model = zs_proc = None
@@ -314,7 +348,14 @@ def main() -> None:
         zs_model, zs_proc = build_model_and_processor(cfg, for_training=False)
 
         def b2(acts, img, task, _m=zs_model, _p=zs_proc):
-            return score_vlm(acts, model=_m, processor=_p, image=img, task=task)
+            return score_vlm(
+                acts,
+                model=_m,
+                processor=_p,
+                image=img,
+                task=task,
+                disabled_fields=disabled_fields,
+            )
 
         scorers["B2_zero_shot"] = b2
 
@@ -325,7 +366,14 @@ def main() -> None:
     ft_model, ft_proc = load_finetuned(cfg, ckpt)
 
     def b3(acts, img, task, _m=ft_model, _p=ft_proc):
-        return score_vlm(acts, model=_m, processor=_p, image=img, task=task)
+        return score_vlm(
+            acts,
+            model=_m,
+            processor=_p,
+            image=img,
+            task=task,
+            disabled_fields=disabled_fields,
+        )
 
     scorers["B3_lora"] = b3
 
@@ -335,9 +383,11 @@ def main() -> None:
         "seed": seed,
         "max_samples": max_samples,
         "k_candidates": len(candidate_actions(cfg)),
+        "disabled_score_fields": disabled_fields,
         "note": (
             "Oracle ranking uses action-only semantic labels (no proprioception). "
-            "Horizon>1 reuses the same observation (no true next-frame)."
+            "Horizon>1 reuses the same observation (no true next-frame). "
+            "disabled_score_fields ablates planner score terms only."
         ),
         "horizons": {},
     }
@@ -353,7 +403,11 @@ def main() -> None:
         )
 
     out_dir = ensure_dir(cfg["paths"]["output_dir"])
-    out_path = Path(out_dir) / f"planner_metrics_{args.split}.json"
+    tag = args.tag.strip()
+    if not tag and disabled_fields:
+        tag = "score_" + "_".join(disabled_fields)
+    suffix = f"_{tag}" if tag else ""
+    out_path = Path(out_dir) / f"planner_metrics_{args.split}{suffix}.json"
     with out_path.open("w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
     print(json.dumps(results, indent=2))

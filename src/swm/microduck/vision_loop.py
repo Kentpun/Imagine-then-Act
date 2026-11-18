@@ -114,8 +114,11 @@ def run_imagine_loop(
     checkpoint: Path,
     config_path: Path,
     task_note: str,
+    detector_weights: Path | None = None,
+    hud_path: Path | None = None,
 ) -> None:
     """Imagine-then-Act: rank velocity candidates with the semantic world model."""
+    from swm.microduck.detector import DuckDetector, draw_detection
     from swm.microduck.planner import MicroDuckImaginationPlanner
     from swm.models.semantic_vlm import load_finetuned
     from swm.utils.config import load_config
@@ -126,9 +129,10 @@ def run_imagine_loop(
     print(f"Loading semantic world model (Imagine-then-Act) from {checkpoint}")
     model, processor = load_finetuned(cfg, str(checkpoint))
     planner = MicroDuckImaginationPlanner(cfg, model=model, processor=processor, mock=False)
+    detector = DuckDetector(detector_weights)
 
     session = resolve_session(session_env=session_env)
-    print("Mode: IMAGINE candidate (vx,yaw) outcomes → ACT best velocity")
+    print("Mode: IMAGINE candidate (vx,yaw[/kick]) outcomes → ACT best command")
     print(f"Task: {task_note}")
     print(f"Candidates: {len(planner.candidates)}")
     print(f"Publishing to {session.topic} on {session.host}:{session.port}")
@@ -150,29 +154,47 @@ def run_imagine_loop(
                 if image is None:
                     time.sleep(0.05)
                     continue
+                det = detector.best(image)
+                if hud_path is not None:
+                    draw_detection(image, det).save(hud_path)
+                print("=== CCTV / DETECT ===", flush=True)
+                if det:
+                    print(
+                        f"  duck box cx={det.cx:.2f} cy={det.cy:.2f} score={det.score:.2f}",
+                        flush=True,
+                    )
+                else:
+                    print("  duck not detected (heuristic/YOLO miss)", flush=True)
                 print("=== IMAGINE ===", flush=True)
                 ranked = planner.rank(image, task_note)
                 for i, item in enumerate(ranked[:5]):
                     a = item.action
+                    label = "KICK" if abs(float(a[2]) - 9.0) < 1e-6 else f"vx={a[0]:.2f} yaw={a[2]:+.2f}"
                     print(
-                        f"  [{i+1}] score={item.score:.2f}  "
-                        f"vx={a[0]:.2f} yaw={a[2]:+.2f}  "
+                        f"  [{i+1}] score={item.score:.2f}  {label}  "
                         f"imagined={item.outcome!r}",
                         flush=True,
                     )
                 best = ranked[0]
-                vx, yaw = float(best.action[0]), float(best.action[2])
-                print(
-                    f"=== ACT === vx={vx:.2f} yaw={yaw:+.2f} score={best.score:.2f}",
-                    flush=True,
-                )
-                with lock:
-                    state["vx"] = vx
-                    state["yaw"] = yaw
-                    state["action_command"] = (
+                is_kick = abs(float(best.action[2]) - 9.0) < 1e-6
+                if is_kick:
+                    vx, yaw = 0.0, 0.0
+                    action_command = "skill=kick"
+                    print(f"=== ACT === KICK score={best.score:.2f}", flush=True)
+                else:
+                    vx, yaw = float(best.action[0]), float(best.action[2])
+                    action_command = (
                         f"imagined_best; vx={vx:.2f}; yaw={yaw:.2f}; "
                         f"outcome={best.outcome[:120]}"
                     )
+                    print(
+                        f"=== ACT === vx={vx:.2f} yaw={yaw:+.2f} score={best.score:.2f}",
+                        flush=True,
+                    )
+                with lock:
+                    state["vx"] = vx
+                    state["yaw"] = yaw
+                    state["action_command"] = action_command
         finally:
             with lock:
                 state["vx"] = 0.0
@@ -277,16 +299,51 @@ def main() -> None:
         "--task",
         default="keep the orange ball inside the green circle",
     )
+    parser.add_argument(
+        "--task-preset",
+        choices=("walk_ab", "kick_goal", "keep_zone", "conditional", "custom"),
+        default="custom",
+        help="Named Part-2 multitask prompts (overrides --task unless custom).",
+    )
+    parser.add_argument(
+        "--detector-weights",
+        type=Path,
+        default=REPO_ROOT / "outputs" / "microduck_detector" / "best.pt",
+    )
+    parser.add_argument(
+        "--hud",
+        type=Path,
+        default=REPO_ROOT.parent
+        / "microduck_demo_part1"
+        / ".demo"
+        / "vision"
+        / "hud.jpg",
+        help="Optional CCTV overlay image path.",
+    )
     args = parser.parse_args()
+
+    from swm.microduck.semantic_tasks import TASK_PROMPTS
+
+    task_note = (
+        args.task
+        if args.task_preset == "custom"
+        else TASK_PROMPTS[args.task_preset]
+    )
 
     if args.mode == "imagine":
         ckpt = args.checkpoint or DEFAULT_SEMANTIC_CKPT
+        # Prefer MicroDuck-domain LoRA when present.
+        duck_ckpt = REPO_ROOT / "outputs" / "microduck_semantic" / "checkpoint-final"
+        if args.checkpoint is None and duck_ckpt.exists():
+            ckpt = duck_ckpt
         run_imagine_loop(
             frame_path=args.frame,
             session_env=args.session_env,
             checkpoint=ckpt,
             config_path=args.config,
-            task_note=args.task,
+            task_note=task_note,
+            detector_weights=args.detector_weights if args.detector_weights.is_file() else None,
+            hud_path=args.hud,
         )
     else:
         ckpt = args.checkpoint or DEFAULT_ACTION_CKPT

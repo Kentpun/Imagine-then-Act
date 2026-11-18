@@ -1,0 +1,93 @@
+{
+  "split": "val",
+  "seed": 42,
+  "max_samples": 64,
+  "k_candidates": 16,
+  "note": "Oracle ranking uses action-only semantic labels (no proprioception). Horizon>1 reuses the same observation (no true next-frame).",
+  "horizons": {
+    "1": {
+      "horizon": 1,
+      "baselines": {
+        "B0_random": {
+          "top1_vs_oracle": 0.03125,
+          "regret": 2.6960937499999984,
+          "spearman": 0.01030547550392315,
+          "logged_top1": 0.078125,
+          "logged_top3": 0.171875,
+          "mean_plan_score": 0.9480391377429388,
+          "n": 64
+        },
+        "B1_heuristic": {
+          "top1_vs_oracle": 1.0,
+          "regret": 0.0,
+          "spearman": 1.0,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": 3.849999999999996,
+          "n": 64
+        },
+        "B2_zero_shot": {
+          "top1_vs_oracle": 0.0,
+          "regret": 3.599999999999996,
+          "spearman": 0.0,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": 0.0,
+          "n": 64
+        },
+        "B3_lora": {
+          "top1_vs_oracle": 0.0,
+          "regret": 2.6999999999999993,
+          "spearman": 0.6092444255623695,
+          "logged_top1": 0.234375,
+          "logged_top3": 0.234375,
+          "mean_plan_score": 1.5249999999999992,
+          "n": 64
+        }
+      },
+      "n_frames": 64
+    },
+    "2": {
+      "horizon": 2,
+      "baselines": {
+        "B0_random": {
+          "top1_vs_oracle": 0.03125,
+          "regret": 2.6960937499999984,
+          "spearman": 0.01030547550392315,
+          "logged_top1": 0.078125,
+          "logged_top3": 0.171875,
+          "mean_plan_score": 1.888992137641632,
+          "n": 64
+        },
+        "B1_heuristic": {
+          "top1_vs_oracle": 1.0,
+          "regret": 0.0,
+          "spearman": 1.0,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": 7.699999999999992,
+          "n": 64
+        },
+        "B2_zero_shot": {
+          "top1_vs_oracle": 0.0,
+          "regret": 3.599999999999996,
+          "spearman": 0.0,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": 0.0,
+          "n": 64
+        },
+        "B3_lora": {
+          "top1_vs_oracle": 0.0,
+          "regret": 2.6999999999999993,
+          "spearman": 0.6092444255623695,
+          "logged_top1": 0.234375,
+          "logged_top3": 0.234375,
+          "mean_plan_score": 3.0499999999999985,
+          "n": 64
+        }
+      },
+      "n_frames": 64
+    }
+  }
+}

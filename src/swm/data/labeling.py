@@ -87,30 +87,65 @@ def label_transition(
     }
 
 
-def build_outcome_string(labels: dict[str, str]) -> str:
+_DEFAULTS = {
+    "moved": "no",
+    "lifted": "no",
+    "gripper": "hold",
+    "progress": "flat",
+    "success_near": "no",
+}
+
+
+def build_outcome_string(
+    labels: dict[str, str],
+    *,
+    active_fields: Sequence[str] | None = None,
+) -> str:
+    """Build the canonical outcome line.
+
+    If ``active_fields`` is set (A4 ablation), non-active fields are replaced
+    with fixed defaults so the model is only supervised on a subset.
+    """
+    out = dict(_DEFAULTS)
+    out.update(labels)
+    if active_fields is not None:
+        keep = {str(f) for f in active_fields}
+        for k in list(out.keys()):
+            if k not in keep:
+                out[k] = _DEFAULTS[k]
     return (
-        f"moved={labels['moved']}; "
-        f"lifted={labels['lifted']}; "
-        f"gripper={labels['gripper']}; "
-        f"progress={labels['progress']}; "
-        f"success_near={labels['success_near']}"
+        f"moved={out['moved']}; "
+        f"lifted={out['lifted']}; "
+        f"gripper={out['gripper']}; "
+        f"progress={out['progress']}; "
+        f"success_near={out['success_near']}"
     )
 
 
-def score_from_outcome(outcome: str) -> float:
-    """Map a predicted outcome string to a scalar for planning."""
+def score_from_outcome(
+    outcome: str,
+    *,
+    disabled_fields: Sequence[str] | None = None,
+) -> float:
+    """Map a predicted outcome string to a scalar for planning.
+
+    ``disabled_fields`` ablates score terms one-at-a-time (e.g. drop
+    ``progress`` or ``success_near``) while keeping the same VLM predictions.
+    """
     text = outcome.lower().replace(" ", "")
+    disabled = {str(f).lower() for f in (disabled_fields or [])}
     score = 0.0
-    if "progress=up" in text:
-        score += 2.0
-    if "progress=down" in text:
-        score -= 1.0
-    if "lifted=yes" in text:
+    if "progress" not in disabled:
+        if "progress=up" in text:
+            score += 2.0
+        if "progress=down" in text:
+            score -= 1.0
+    if "lifted" not in disabled and "lifted=yes" in text:
         score += 1.5
-    if "success_near=yes" in text:
+    if "success_near" not in disabled and "success_near=yes" in text:
         score += 3.0
-    if "moved=yes" in text:
+    if "moved" not in disabled and "moved=yes" in text:
         score += 0.25
-    if "gripper=close" in text:
+    if "gripper" not in disabled and "gripper=close" in text:
         score += 0.1
     return score

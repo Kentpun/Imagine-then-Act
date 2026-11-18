@@ -103,9 +103,16 @@ def build_model_and_processor(cfg: dict[str, Any], *, for_training: bool = True)
                 model.config.use_cache = False
 
         if model_cfg.get("freeze_vision", False):
+            n_frozen = 0
             for name, param in model.named_parameters():
                 if "visual" in name:
                     param.requires_grad = False
+                    n_frozen += 1
+            print(
+                f"Ablation: froze {n_frozen} vision parameters "
+                f"(model.freeze_vision=true)",
+                flush=True,
+            )
 
         lora_cfg = model_cfg["lora"]
         peft_config = LoraConfig(

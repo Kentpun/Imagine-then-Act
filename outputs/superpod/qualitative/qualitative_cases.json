@@ -1,0 +1,179 @@
+{
+  "checkpoint": "outputs/superpod/checkpoint-final",
+  "n_success": 5,
+  "n_failure": 5,
+  "successes": [
+    {
+      "index": 0,
+      "task": "pick up the butter and place it in the basket",
+      "action": [
+        0.1071428582072258,
+        -0.08571428805589676,
+        -0.0,
+        0.0,
+        0.019285714253783226,
+        -0.03750000149011612,
+        -1.0
+      ],
+      "gold": "moved=yes; lifted=no; gripper=open; progress=flat; success_near=no",
+      "pred": "moved=yes; lifted=no; gripper=open; progress=flat; success_near=no",
+      "exact_match": true,
+      "image": "outputs/superpod/qualitative/frames/ok_00.jpg"
+    },
+    {
+      "index": 1,
+      "task": "pick up the butter and place it in the basket",
+      "action": [
+        0.16875000298023224,
+        -0.44732141494750977,
+        -0.0,
+        0.0,
+        0.04500000178813934,
+        -0.04928571358323097,
+        -1.0
+      ],
+      "gold": "moved=yes; lifted=no; gripper=open; progress=flat; success_near=no",
+      "pred": "moved=yes; lifted=no; gripper=open; progress=flat; success_near=no",
+      "exact_match": true,
+      "image": "outputs/superpod/qualitative/frames/ok_01.jpg"
+    },
+    {
+      "index": 2,
+      "task": "pick up the butter and place it in the basket",
+      "action": [
+        0.16875000298023224,
+        -0.8089285492897034,
+        -0.0,
+        0.04714285582304001,
+        0.02678571455180645,
+        -0.056785713881254196,
+        -1.0
+      ],
+      "gold": "moved=yes; lifted=no; gripper=open; progress=down; success_near=no",
+      "pred": "moved=yes; lifted=no; gripper=open; progress=down; success_near=no",
+      "exact_match": true,
+      "image": "outputs/superpod/qualitative/frames/ok_02.jpg"
+    },
+    {
+      "index": 3,
+      "task": "pick up the butter and place it in the basket",
+      "action": [
+        0.1071428582072258,
+        -0.8142856955528259,
+        -0.0,
+        0.04714285582304001,
+        0.0,
+        -0.05785714462399483,
+        -1.0
+      ],
+      "gold": "moved=yes; lifted=no; gripper=open; progress=down; success_near=no",
+      "pred": "moved=yes; lifted=no; gripper=open; progress=down; success_near=no",
+      "exact_match": true,
+      "image": "outputs/superpod/qualitative/frames/ok_03.jpg"
+    },
+    {
+      "index": 4,
+      "task": "pick up the butter and place it in the basket",
+      "action": [
+        0.03482142835855484,
+        -0.8035714030265808,
+        -0.0,
+        0.03750000149011612,
+        -0.0053571430034935474,
+        -0.0535714291036129,
+        -1.0
+      ],
+      "gold": "moved=yes; lifted=no; gripper=open; progress=down; success_near=no",
+      "pred": "moved=yes; lifted=no; gripper=open; progress=down; success_near=no",
+      "exact_match": true,
+      "image": "outputs/superpod/qualitative/frames/ok_04.jpg"
+    }
+  ],
+  "failures": [
+    {
+      "index": 24,
+      "task": "pick up the butter and place it in the basket",
+      "action": [
+        0.04285714402794838,
+        0.7928571701049805,
+        -0.0,
+        0.05785714462399483,
+        -0.09535714238882065,
+        0.0010714285308495164,
+        1.0
+      ],
+      "gold": "moved=yes; lifted=no; gripper=close; progress=up; success_near=no",
+      "pred": "moved=yes; lifted=no; gripper=close; progress=down; success_near=no",
+      "exact_match": false,
+      "image": "outputs/superpod/qualitative/frames/fail_00.jpg"
+    },
+    {
+      "index": 25,
+      "task": "pick up the butter and place it in the basket",
+      "action": [
+        0.0,
+        0.7178571224212646,
+        -0.0,
+        0.0803571417927742,
+        -0.0503571443259716,
+        0.014999999664723873,
+        1.0
+      ],
+      "gold": "moved=yes; lifted=no; gripper=close; progress=up; success_near=no",
+      "pred": "moved=yes; lifted=no; gripper=close; progress=flat; success_near=no",
+      "exact_match": false,
+      "image": "outputs/superpod/qualitative/frames/fail_01.jpg"
+    },
+    {
+      "index": 30,
+      "task": "pick up the butter and place it in the basket",
+      "action": [
+        0.03750000149011612,
+        0.13928571343421936,
+        0.6053571701049805,
+        -0.04500000178813934,
+        0.03321428596973419,
+        -0.0,
+        -1.0
+      ],
+      "gold": "moved=yes; lifted=no; gripper=open; progress=flat; success_near=no",
+      "pred": "moved=yes; lifted=no; gripper=open; progress=flat; success_near=yes",
+      "exact_match": false,
+      "image": "outputs/superpod/qualitative/frames/fail_02.jpg"
+    },
+    {
+      "index": 41,
+      "task": "pick up the cream cheese and place it in the basket",
+      "action": [
+        -0.15267856419086456,
+        -0.0053571430034935474,
+        -0.7821428775787354,
+        0.0,
+        0.0,
+        -0.0,
+        -1.0
+      ],
+      "gold": "moved=yes; lifted=no; gripper=open; progress=down; success_near=no",
+      "pred": "moved=yes; lifted=no; gripper=open; progress=flat; success_near=no",
+      "exact_match": false,
+      "image": "outputs/superpod/qualitative/frames/fail_03.jpg"
+    },
+    {
+      "index": 54,
+      "task": "pick up the cream cheese and place it in the basket",
+      "action": [
+        -0.02946428582072258,
+        0.10982143133878708,
+        -0.20357142388820648,
+        0.0,
+        0.0,
+        -0.0,
+        1.0
+      ],
+      "gold": "moved=yes; lifted=no; gripper=close; progress=flat; success_near=yes",
+      "pred": "moved=yes; lifted=no; gripper=close; progress=flat; success_near=no",
+      "exact_match": false,
+      "image": "outputs/superpod/qualitative/frames/fail_04.jpg"
+    }
+  ]
+}

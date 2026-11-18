@@ -25,12 +25,28 @@ FORMAT_HINT = (
 )
 
 
-def build_prompt(task: str, action: Sequence[float], *, format_hint: bool = False) -> str:
-    body = (
-        f"Task: {task.strip()}\n"
-        f"{format_action(action)}\n"
-        "Predict the semantic outcome after this action.\n"
-    )
+def build_prompt(
+    task: str,
+    action: Sequence[float],
+    *,
+    format_hint: bool = False,
+    include_action: bool = True,
+) -> str:
+    """Build the Layer-A prompt.
+
+    ``include_action=False`` is the strong action ablation: train/eval without
+    any action vector in the prompt (stronger than shuffle-at-eval).
+    """
+    lines = [f"Task: {task.strip()}"]
+    if include_action:
+        lines.append(format_action(action))
+        lines.append("Predict the semantic outcome after this action.")
+    else:
+        lines.append(
+            "Predict the semantic outcome for the next transition "
+            "(no action is provided)."
+        )
+    body = "\n".join(lines) + "\n"
     if format_hint:
         body += FORMAT_HINT
     return body + "Answer:"

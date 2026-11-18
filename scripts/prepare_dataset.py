@@ -177,6 +177,7 @@ def _materialize_rows(cfg: dict[str, Any], ds) -> tuple[list[dict], list[dict]]:
         lift_threshold=cfg["data"]["lift_threshold"],
         success_near_frames=cfg["data"]["success_near_frames"],
     )
+    active_fields = cfg["data"].get("active_fields")
     candidates = cfg["data"]["image_key_candidates"]
     max_episodes = cfg["data"].get("max_episodes")
     stride = int(cfg["data"]["stride"])
@@ -276,7 +277,7 @@ def _materialize_rows(cfg: dict[str, Any], ds) -> tuple[list[dict], list[dict]]:
                 "frame_idx": int(local_t),
                 "task": str(task),
                 "action": action.tolist(),
-                "outcome": build_outcome_string(labels),
+                "outcome": build_outcome_string(labels, active_fields=active_fields),
                 "image_path": str(out_path),
             }
             if ep in val_eps:
