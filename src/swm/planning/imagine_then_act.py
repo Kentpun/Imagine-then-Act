@@ -179,7 +179,12 @@ def main() -> None:
     print(f"Task: {task}")
 
     print("\n=== IMAGINE ===")
-    print(f"Querying world model for {len(controller.planner.candidates)} candidate actions...")
+    mode = getattr(controller.planner, "mode", "grid")
+    score_mode = getattr(controller.planner, "score_mode", "heuristic")
+    print(
+        f"Planner mode={mode} score={score_mode}; "
+        f"querying world model for candidate actions..."
+    )
     result = controller.imagine_then_act(image, task, horizon=args.horizon)
 
     for i, step in enumerate(result.imaginations[: max(1, args.top)]):

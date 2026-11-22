@@ -1,0 +1,59 @@
+# Equal-compute LIBERO direct-policy baseline (B4_direct_policy).
+# Identical backbone, LoRA rank/alpha, batch size, epochs, and frames as superpod.yaml;
+# only supervision changes from (o_t, g, a_t) -> outcome  to  (o_t, g) -> a_t.
+seed: 42
+
+paths:
+  root: .
+  raw_dir: data/raw/libero
+  processed_dir: data/processed_direct_policy
+  frames_dir: data/processed/frames
+  output_dir: outputs/superpod_direct_policy
+
+data:
+  include_action: true
+  move_threshold: 0.01
+  lift_threshold: 0.01
+  success_near_frames: 15
+
+model:
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  load_in_4bit: false
+  freeze_vision: false
+  max_pixels: 401408
+  lora:
+    r: 16
+    alpha: 32
+    dropout: 0.05
+    target_modules:
+      - q_proj
+      - k_proj
+      - v_proj
+      - o_proj
+      - gate_proj
+      - up_proj
+      - down_proj
+
+train:
+  num_epochs: 2
+  batch_size: 2
+  grad_accum: 8
+  learning_rate: 2.0e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.03
+  max_seq_length: 512
+  max_train_samples: null
+  logging_steps: 20
+  save_steps: 2000
+  eval_steps: 2000
+  gradient_checkpointing: true
+  bf16: true
+  fp16: false
+  dataloader_num_workers: 8
+  resume_from: null
+
+eval:
+  checkpoint: outputs/superpod_direct_policy/checkpoint-final
+  max_samples: 512
+  planner_max_samples: 64
+  zero_shot_baseline: false

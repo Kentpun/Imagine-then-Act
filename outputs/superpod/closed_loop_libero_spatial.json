@@ -1,0 +1,138 @@
+{
+  "backend": "synthetic_tabletop",
+  "note": "MuJoCo/LIBERO simulator not installed; ran synthetic 3D tabletop reach-grasp-lift closed-loop benchmark. Install libero on SuperPOD for official OffScreenRenderEnv rollouts.",
+  "n_tasks": 3,
+  "episodes_per_task": 10,
+  "max_steps": 40,
+  "tasks": {
+    "synthetic_00": {
+      "instruction": "pick up the red block",
+      "controllers": {
+        "B0_random": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B1_heuristic": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B2_zero_shot_policy": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B5_react": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B3_imagine_lora": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B4_direct_policy": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B4b_action_cmd_vla": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        }
+      }
+    },
+    "synthetic_01": {
+      "instruction": "lift the blue mug from the table",
+      "controllers": {
+        "B0_random": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B1_heuristic": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B2_zero_shot_policy": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B5_react": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B3_imagine_lora": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B4_direct_policy": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B4b_action_cmd_vla": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        }
+      }
+    },
+    "synthetic_02": {
+      "instruction": "grasp the yellow bowl and lift it up",
+      "controllers": {
+        "B0_random": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B1_heuristic": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B2_zero_shot_policy": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B5_react": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B3_imagine_lora": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B4_direct_policy": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        },
+        "B4b_action_cmd_vla": {
+          "success_rate": 0.0,
+          "mean_steps": 40.0
+        }
+      }
+    }
+  },
+  "macro_average": {
+    "B0_random": {
+      "success_rate": 0.0,
+      "mean_steps": 40.0
+    },
+    "B1_heuristic": {
+      "success_rate": 0.0,
+      "mean_steps": 40.0
+    },
+    "B2_zero_shot_policy": {
+      "success_rate": 0.0,
+      "mean_steps": 40.0
+    },
+    "B5_react": {
+      "success_rate": 0.0,
+      "mean_steps": 40.0
+    },
+    "B3_imagine_lora": {
+      "success_rate": 0.0,
+      "mean_steps": 40.0
+    },
+    "B4_direct_policy": {
+      "success_rate": 0.0,
+      "mean_steps": 40.0
+    },
+    "B4b_action_cmd_vla": {
+      "success_rate": 0.0,
+      "mean_steps": 40.0
+    }
+  }
+}

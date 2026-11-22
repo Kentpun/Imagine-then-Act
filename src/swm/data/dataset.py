@@ -50,8 +50,15 @@ class SemanticTransitionDataset(Dataset):
             "prompt": prompt,
             "answer": answer,
             "task": row["task"],
+            "task_kind": row.get("task_kind"),
             "action": row.get("action", []),
             "episode_id": row.get("episode_id", -1),
+            "frame_idx": row.get("frame_idx", 0),
+            "episode_len": row.get("episode_len"),
+            "episode_success": row.get("episode_success"),
+            "state": row.get("state"),
+            "state_next": row.get("state_next"),
+            "scene_state": row.get("scene_state"),
         }
 
 

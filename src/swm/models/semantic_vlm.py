@@ -149,18 +149,18 @@ def load_finetuned(cfg: dict[str, Any], checkpoint: str):
 
 
 @torch.inference_mode()
-def generate_outcome(
+def generate_text(
     model,
     processor,
     image: Image.Image,
-    task: str,
-    action: list[float],
+    prompt: str,
     *,
-    prompt: str | None = None,
     system: str | None = None,
-    max_new_tokens: int = 64,
+    max_new_tokens: int = 128,
+    do_sample: bool = False,
+    temperature: float = 0.7,
 ) -> str:
-    prompt = prompt if prompt is not None else build_prompt(task, action)
+    """Free-form VLM generation (proposals / preference ranking)."""
     messages = []
     if system:
         messages.append(
@@ -184,8 +184,138 @@ def generate_outcome(
     )
     device = get_model_device(model)
     inputs = inputs.to(device)
-    out = model.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=False)
+    gen_kwargs: dict[str, Any] = {"max_new_tokens": int(max_new_tokens)}
+    if do_sample:
+        gen_kwargs["do_sample"] = True
+        gen_kwargs["temperature"] = float(temperature)
+    else:
+        gen_kwargs["do_sample"] = False
+    out = model.generate(**inputs, **gen_kwargs)
     trimmed = [o[len(i) :] for i, o in zip(inputs["input_ids"], out)]
     return processor.batch_decode(
         trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
     )[0].strip()
+
+
+@torch.inference_mode()
+def generate_outcome(
+    model,
+    processor,
+    image: Image.Image,
+    task: str,
+    action: list[float],
+    *,
+    prompt: str | None = None,
+    system: str | None = None,
+    max_new_tokens: int = 64,
+) -> str:
+    prompt = prompt if prompt is not None else build_prompt(task, action)
+    return generate_text(
+        model,
+        processor,
+        image,
+        prompt,
+        system=system,
+        max_new_tokens=max_new_tokens,
+        do_sample=False,
+    )
+
+
+@torch.inference_mode()
+def generate_outcomes_batch(
+    model,
+    processor,
+    image: Image.Image,
+    task: str,
+    actions: list[list[float]],
+    *,
+    prompts: list[str] | None = None,
+    system: str | None = None,
+    max_new_tokens: int = 64,
+    batch_size: int = 8,
+) -> list[str]:
+    """Batched greedy outcome generation across K candidate actions on one frame."""
+    if not actions:
+        return []
+    prompt_list = (
+        list(prompts)
+        if prompts is not None
+        else [build_prompt(task, a) for a in actions]
+    )
+    if len(actions) == 1:
+        return [
+            generate_outcome(
+                model,
+                processor,
+                image,
+                task,
+                actions[0],
+                prompt=prompt_list[0],
+                system=system,
+                max_new_tokens=max_new_tokens,
+            )
+        ]
+
+    device = get_model_device(model)
+    tok = getattr(processor, "tokenizer", None)
+    old_side = getattr(tok, "padding_side", "right") if tok is not None else "right"
+    results: list[str] = []
+    try:
+        if tok is not None:
+            tok.padding_side = "left"
+        for start in range(0, len(prompt_list), max(1, int(batch_size))):
+            sub_prompts = prompt_list[start : start + max(1, int(batch_size))]
+            texts: list[str] = []
+            imgs: list[Image.Image] = []
+            for pr in sub_prompts:
+                msgs = []
+                if system:
+                    msgs.append(
+                        {"role": "system", "content": [{"type": "text", "text": system}]}
+                    )
+                msgs.append(
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "image", "image": image},
+                            {"type": "text", "text": pr},
+                        ],
+                    }
+                )
+                texts.append(
+                    processor.apply_chat_template(
+                        msgs, tokenize=False, add_generation_prompt=True
+                    )
+                )
+                imgs.append(image)
+            inputs = processor(
+                text=texts, images=imgs, padding=True, return_tensors="pt"
+            ).to(device)
+            out = model.generate(
+                **inputs, max_new_tokens=int(max_new_tokens), do_sample=False
+            )
+            in_len = inputs["input_ids"].shape[1]
+            trimmed = [row[in_len:] for row in out]
+            decoded = processor.batch_decode(
+                trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
+            )
+            results.extend(s.strip() for s in decoded)
+        return results
+    except Exception:
+        # Fallback to exact single-sample decode if processor/device rejects batching
+        return [
+            generate_outcome(
+                model,
+                processor,
+                image,
+                task,
+                a,
+                prompt=pr,
+                system=system,
+                max_new_tokens=max_new_tokens,
+            )
+            for a, pr in zip(actions, prompt_list)
+        ]
+    finally:
+        if tok is not None:
+            tok.padding_side = old_side

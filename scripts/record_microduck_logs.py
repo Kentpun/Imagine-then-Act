@@ -29,8 +29,25 @@ from swm.utils.io import ensure_dir
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--out_dir", default="data/microduck_raw")
-    p.add_argument("--episodes_per_task", type=int, default=40)
+    p.add_argument("--episodes_per_task", type=int, default=100)
     p.add_argument("--max_steps", type=int, default=40)
+    p.add_argument(
+        "--behavior_mode",
+        choices=("mixed_play", "epsilon_expert", "expert"),
+        default="mixed_play",
+        help=(
+            "mixed_play: realistic suboptimal teleop + exploratory play "
+            "(20%% expert, 45%% myopic forward walk, 35%% uniform 8-action play); "
+            "epsilon_expert: (1 - explore_prob) expert + explore_prob random; "
+            "expert: 100%% privileged_command."
+        ),
+    )
+    p.add_argument(
+        "--explore_prob",
+        type=float,
+        default=0.35,
+        help="Exploration probability when --behavior_mode=epsilon_expert.",
+    )
     p.add_argument("--seed", type=int, default=42)
     p.add_argument(
         "--tasks",
@@ -60,6 +77,17 @@ def main() -> None:
     ep_dir = ensure_dir(out / "episodes")
     index: list[dict] = []
 
+    explore_actions: list[tuple[float, float, str]] = [
+        (0.0, 0.0, "hold"),
+        (0.15, 0.0, "walk"),
+        (0.15, 0.5, "walk"),
+        (0.15, -0.5, "walk"),
+        (0.25, 0.0, "walk"),
+        (0.25, 0.5, "walk"),
+        (0.25, -0.5, "walk"),
+        (0.0, 0.0, "kick"),
+    ]
+
     ep_id = 0
     for task_name in args.tasks:
         task = task_name  # type: ignore[assignment]
@@ -68,7 +96,22 @@ def main() -> None:
             s = random_scene(task, rng)  # type: ignore[arg-type]
             steps = []
             for t in range(args.max_steps):
-                vx, yaw, skill = privileged_command(task, s)  # type: ignore[arg-type]
+                u = rng.random()
+                if args.behavior_mode == "expert":
+                    vx, yaw, skill = privileged_command(task, s)  # type: ignore[arg-type]
+                elif args.behavior_mode == "epsilon_expert":
+                    if u < float(args.explore_prob):
+                        vx, yaw, skill = rng.choice(explore_actions)
+                    else:
+                        vx, yaw, skill = privileged_command(task, s)  # type: ignore[arg-type]
+                else:
+                    # mixed_play: 20% expert, 45% myopic cautious walker, 35% uniform play
+                    if u < 0.20:
+                        vx, yaw, skill = privileged_command(task, s)  # type: ignore[arg-type]
+                    elif u < 0.65:
+                        vx, yaw, skill = 0.15, 0.0, "walk"
+                    else:
+                        vx, yaw, skill = rng.choice(explore_actions)
                 img = render_topdown(s)
                 rel = f"ep{ep_id:05d}_t{t:04d}.jpg"
                 img_path = frames / rel
@@ -88,6 +131,11 @@ def main() -> None:
                     "duck_yaw": s.duck_yaw,
                     "ball_x": s.ball_x,
                     "ball_y": s.ball_y,
+                    "next_duck_x": s_next.duck_x,
+                    "next_duck_y": s_next.duck_y,
+                    "next_duck_yaw": s_next.duck_yaw,
+                    "next_ball_x": s_next.ball_x,
+                    "next_ball_y": s_next.ball_y,
                     "zone_cx": s.zone_cx,
                     "zone_cy": s.zone_cy,
                     "zone_r": s.zone_r,
@@ -95,11 +143,11 @@ def main() -> None:
                     "goal_y": s.goal_y,
                     "zone_b_x": s.zone_b_x,
                     "zone_b_y": s.zone_b_y,
-                    "ball_in_zone": ball_in_zone(s),
+                    "ball_in_zone": ball_in_zone(s_next),
                     "facing_goal": facing_goal(
-                        s,
-                        s.zone_b_x if task == "walk_ab" else s.goal_x,
-                        s.zone_b_y if task == "walk_ab" else s.goal_y,
+                        s_next,
+                        s_next.zone_b_x if task == "walk_ab" else s_next.goal_x,
+                        s_next.zone_b_y if task == "walk_ab" else s_next.goal_y,
                     ),
                     "image_path": str(img_path),
                     "success": success,

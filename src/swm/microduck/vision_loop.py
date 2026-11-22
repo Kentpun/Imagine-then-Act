@@ -161,7 +161,10 @@ def run_imagine_loop(
     session = resolve_session(session_env=session_env)
     print("Mode: IMAGINE candidate (vx,yaw[/kick]) outcomes → ACT best command")
     print(f"Task: {task_note}")
-    print(f"Candidates: {len(planner.candidates)}")
+    print(
+        f"Planner mode={planner.mode} score={planner.score_mode}; "
+        f"grid fallback candidates={len(planner.candidates)}"
+    )
     print(f"Replan every: {replan_every_s:.1f}s (keeps last ACT between ranks)")
     print(f"Publishing to {session.topic} on {session.host}:{session.port}")
     print(f"Waiting for frames at {frame_path}")

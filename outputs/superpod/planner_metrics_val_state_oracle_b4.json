@@ -1,0 +1,190 @@
+{
+  "split": "val",
+  "seed": 42,
+  "oracle_mode": "state_counterfactual",
+  "domain": "libero",
+  "max_samples": 64,
+  "k_candidates": 16,
+  "disabled_score_fields": [],
+  "note": "Oracle uses scene/state-grounded counterfactual scoring by default (eliminating B1 action-only tautology). B4_direct_policy compares an equal-compute direct VLM policy against B3_lora imagination.",
+  "horizons": {
+    "1": {
+      "horizon": 1,
+      "oracle_modes_used": [
+        "state_counterfactual"
+      ],
+      "baselines": {
+        "B0_random": {
+          "top1_vs_oracle": 0.09375,
+          "regret": 1.7778992191970118,
+          "spearman": -0.00787986098056618,
+          "logged_top1": 0.078125,
+          "logged_top3": 0.171875,
+          "mean_plan_score": 0.9480391377429388,
+          "mean_l2_to_logged": 0.6860901408152914,
+          "n": 64
+        },
+        "B1_heuristic": {
+          "top1_vs_oracle": 0.0,
+          "regret": 2.0024575834814207,
+          "spearman": 0.012000576254332703,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": 3.849999999999996,
+          "mean_l2_to_logged": 0.7513469096671321,
+          "n": 64
+        },
+        "B2_zero_shot_imagine": {
+          "top1_vs_oracle": 0.109375,
+          "regret": 2.140840005552324,
+          "spearman": 0.0,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": 0.0,
+          "mean_l2_to_logged": 0.7441726820007902,
+          "n": 64
+        },
+        "B2b_zero_shot_policy": {
+          "top1_vs_oracle": 0.109375,
+          "regret": 2.1132127803590297,
+          "spearman": -0.12385094069392952,
+          "logged_top1": 0.015625,
+          "logged_top3": 0.015625,
+          "mean_plan_score": -0.0656624657543312,
+          "mean_l2_to_logged": 0.7376383505437368,
+          "n": 64
+        },
+        "B5_react": {
+          "top1_vs_oracle": 0.109375,
+          "regret": 2.103774377299218,
+          "spearman": -0.09535654743302302,
+          "logged_top1": 0.015625,
+          "logged_top3": 0.015625,
+          "mean_plan_score": -0.049804687523283014,
+          "mean_l2_to_logged": 0.7340354184338803,
+          "n": 64
+        },
+        "B3_lora": {
+          "top1_vs_oracle": 0.234375,
+          "regret": 1.1126381054124375,
+          "spearman": 0.09626751072052349,
+          "logged_top1": 0.234375,
+          "logged_top3": 0.234375,
+          "mean_plan_score": 1.5703124999999993,
+          "mean_l2_to_logged": 0.5271356539437011,
+          "n": 64
+        },
+        "B4_direct_policy": {
+          "top1_vs_oracle": 0.53125,
+          "regret": 0.5851236418631771,
+          "spearman": 0.6349301887332827,
+          "logged_top1": 0.8125,
+          "logged_top3": 0.8125,
+          "mean_plan_score": -0.19305414522706357,
+          "mean_l2_to_logged": 0.07522259423450747,
+          "n": 64
+        },
+        "B4b_action_cmd": {
+          "top1_vs_oracle": 0.015625,
+          "regret": 1.9155342753254236,
+          "spearman": -0.04316273853884014,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": -0.02940939894600865,
+          "mean_l2_to_logged": 0.7393091371606586,
+          "n": 64
+        }
+      },
+      "n_frames": 64
+    },
+    "2": {
+      "horizon": 2,
+      "oracle_modes_used": [
+        "state_counterfactual"
+      ],
+      "baselines": {
+        "B0_random": {
+          "top1_vs_oracle": 0.09375,
+          "regret": 1.7778992191970118,
+          "spearman": -0.00787986098056618,
+          "logged_top1": 0.078125,
+          "logged_top3": 0.171875,
+          "mean_plan_score": 1.888992137641632,
+          "mean_l2_to_logged": 0.6860901408152914,
+          "n": 64
+        },
+        "B1_heuristic": {
+          "top1_vs_oracle": 0.0,
+          "regret": 2.0024575834814207,
+          "spearman": 0.012000576254332703,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": 7.699999999999992,
+          "mean_l2_to_logged": 0.7513469096671321,
+          "n": 64
+        },
+        "B2_zero_shot_imagine": {
+          "top1_vs_oracle": 0.109375,
+          "regret": 2.140840005552324,
+          "spearman": 0.0,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": 0.0,
+          "mean_l2_to_logged": 0.7441726820007902,
+          "n": 64
+        },
+        "B2b_zero_shot_policy": {
+          "top1_vs_oracle": 0.109375,
+          "regret": 2.1132127803590297,
+          "spearman": -0.12385094069392952,
+          "logged_top1": 0.015625,
+          "logged_top3": 0.015625,
+          "mean_plan_score": -0.1313249315086624,
+          "mean_l2_to_logged": 0.7376383505437368,
+          "n": 64
+        },
+        "B5_react": {
+          "top1_vs_oracle": 0.109375,
+          "regret": 2.103774377299218,
+          "spearman": -0.09535654743302302,
+          "logged_top1": 0.015625,
+          "logged_top3": 0.015625,
+          "mean_plan_score": -0.09960937504656603,
+          "mean_l2_to_logged": 0.7340354184338803,
+          "n": 64
+        },
+        "B3_lora": {
+          "top1_vs_oracle": 0.234375,
+          "regret": 1.1126381054124375,
+          "spearman": 0.09626751072052349,
+          "logged_top1": 0.234375,
+          "logged_top3": 0.234375,
+          "mean_plan_score": 3.1406249999999987,
+          "mean_l2_to_logged": 0.5271356539437011,
+          "n": 64
+        },
+        "B4_direct_policy": {
+          "top1_vs_oracle": 0.53125,
+          "regret": 0.5851236418631771,
+          "spearman": 0.6349301887332827,
+          "logged_top1": 0.8125,
+          "logged_top3": 0.8125,
+          "mean_plan_score": -0.38610829045412715,
+          "mean_l2_to_logged": 0.07522259423450747,
+          "n": 64
+        },
+        "B4b_action_cmd": {
+          "top1_vs_oracle": 0.015625,
+          "regret": 1.9155342753254236,
+          "spearman": -0.04316273853884014,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": -0.0588187978920173,
+          "mean_l2_to_logged": 0.7393091371606586,
+          "n": 64
+        }
+      },
+      "n_frames": 64
+    }
+  }
+}

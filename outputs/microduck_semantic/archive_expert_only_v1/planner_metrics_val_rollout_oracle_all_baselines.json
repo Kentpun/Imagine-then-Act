@@ -1,0 +1,91 @@
+{
+  "split": "val",
+  "seed": 42,
+  "oracle_mode": "microduck_rollout",
+  "domain": "microduck",
+  "max_samples": 64,
+  "k_candidates": 8,
+  "disabled_score_fields": [],
+  "note": "Oracle uses scene/state-grounded counterfactual scoring by default (eliminating B1 action-only tautology). B4_direct_policy compares an equal-compute direct VLM policy against B3_lora imagination.",
+  "horizons": {
+    "1": {
+      "horizon": 1,
+      "oracle_modes_used": [
+        "microduck_rollout"
+      ],
+      "baselines": {
+        "B0_random": {
+          "top1_vs_oracle": 0.15625,
+          "regret": 2.052000749433813,
+          "spearman": 0.058656160314846266,
+          "logged_top1": 0.125,
+          "logged_top3": 0.40625,
+          "mean_plan_score": 0.8907099004306018,
+          "mean_l2_to_logged": 0.36564463555201565,
+          "n": 64
+        },
+        "B1_heuristic": {
+          "top1_vs_oracle": 0.0,
+          "regret": 3.0487062406168683,
+          "spearman": 0.6832265491462519,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": 0.25,
+          "mean_l2_to_logged": 0.6104662160434428,
+          "n": 64
+        },
+        "B2_zero_shot_imagine": {
+          "top1_vs_oracle": 0.0,
+          "regret": 3.1361136020143476,
+          "spearman": 0.0,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": 0.0,
+          "mean_l2_to_logged": 0.3127690769824111,
+          "n": 64
+        },
+        "B2b_zero_shot_policy": {
+          "top1_vs_oracle": 0.0,
+          "regret": 3.1361136020143476,
+          "spearman": -0.354232482163197,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": 0.0,
+          "mean_l2_to_logged": 0.3127690769824111,
+          "n": 64
+        },
+        "B5_react": {
+          "top1_vs_oracle": 0.140625,
+          "regret": 2.885492607224314,
+          "spearman": 0.001869360343149445,
+          "logged_top1": 0.0,
+          "logged_top3": 0.140625,
+          "mean_plan_score": -0.09227183643012418,
+          "mean_l2_to_logged": 0.37424454297236964,
+          "n": 64
+        },
+        "B3_lora": {
+          "top1_vs_oracle": 0.0,
+          "regret": 3.1361136020143476,
+          "spearman": 0.5836315078671774,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": 4.5,
+          "mean_l2_to_logged": 0.3127690769824111,
+          "n": 64
+        },
+        "B4_direct_policy": {
+          "top1_vs_oracle": 0.015625,
+          "regret": 0.7219434712213808,
+          "spearman": 0.309652130556882,
+          "logged_top1": 0.796875,
+          "logged_top3": 0.796875,
+          "mean_plan_score": 0.0,
+          "mean_l2_to_logged": 0.1015625,
+          "n": 64
+        }
+      },
+      "n_frames": 64
+    }
+  }
+}

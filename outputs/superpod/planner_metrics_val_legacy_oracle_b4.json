@@ -1,0 +1,71 @@
+{
+  "split": "val",
+  "seed": 42,
+  "oracle_mode": "action_only_legacy",
+  "domain": "libero",
+  "max_samples": 64,
+  "k_candidates": 16,
+  "disabled_score_fields": [],
+  "note": "Oracle uses scene/state-grounded counterfactual scoring by default (eliminating B1 action-only tautology). B4_direct_policy compares an equal-compute direct VLM policy against B3_lora imagination.",
+  "horizons": {
+    "1": {
+      "horizon": 1,
+      "oracle_modes_used": [
+        "action_only_legacy"
+      ],
+      "baselines": {
+        "B0_random": {
+          "top1_vs_oracle": 0.03125,
+          "regret": 2.6960937499999984,
+          "spearman": 0.01030547550392315,
+          "logged_top1": 0.078125,
+          "logged_top3": 0.171875,
+          "mean_plan_score": 0.9480391377429388,
+          "mean_l2_to_logged": 0.6860901408152914,
+          "n": 64
+        },
+        "B1_heuristic": {
+          "top1_vs_oracle": 1.0,
+          "regret": 0.0,
+          "spearman": 1.0,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": 3.849999999999996,
+          "mean_l2_to_logged": 0.7513469096671321,
+          "n": 64
+        },
+        "B3_lora": {
+          "top1_vs_oracle": 0.0,
+          "regret": 2.701562499999999,
+          "spearman": 0.579361034974492,
+          "logged_top1": 0.234375,
+          "logged_top3": 0.234375,
+          "mean_plan_score": 1.5703124999999993,
+          "mean_l2_to_logged": 0.5271356539437011,
+          "n": 64
+        },
+        "B4_direct_policy": {
+          "top1_vs_oracle": 0.0,
+          "regret": 3.090624999999998,
+          "spearman": -0.22178192816331724,
+          "logged_top1": 0.8125,
+          "logged_top3": 0.8125,
+          "mean_plan_score": -0.19305414522706357,
+          "mean_l2_to_logged": 0.07522259423450747,
+          "n": 64
+        },
+        "B4b_action_cmd": {
+          "top1_vs_oracle": 0.0,
+          "regret": 3.5,
+          "spearman": 0.7304225404633086,
+          "logged_top1": 0.0,
+          "logged_top3": 0.0,
+          "mean_plan_score": -0.02940939894600865,
+          "mean_l2_to_logged": 0.7393091371606586,
+          "n": 64
+        }
+      },
+      "n_frames": 64
+    }
+  }
+}

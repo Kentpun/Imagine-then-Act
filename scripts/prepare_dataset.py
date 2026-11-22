@@ -89,8 +89,12 @@ def build_smoke(cfg: dict[str, Any]) -> tuple[list[dict], list[dict]]:
                 {
                     "episode_id": ep,
                     "frame_idx": t,
+                    "episode_len": T,
+                    "episode_success": bool(success),
                     "task": task,
                     "action": action.tolist(),
+                    "state": state.tolist(),
+                    "state_next": state_next.tolist(),
                     "outcome": build_outcome_string(labels),
                     "image_path": str(Path(frames_dir) / rel),
                     "split_hint": "train" if ep < 10 else "val",
@@ -272,11 +276,25 @@ def _materialize_rows(cfg: dict[str, Any], ds) -> tuple[list[dict], list[dict]]:
             rel = f"ep{ep:05d}_t{local_t:04d}.jpg"
             out_path = Path(frames_dir) / rel
             _save_frame(image, out_path)
+            state_list = (
+                np.asarray(state, dtype=np.float32).reshape(-1).tolist()
+                if state is not None
+                else None
+            )
+            state_next_list = (
+                np.asarray(state_next, dtype=np.float32).reshape(-1).tolist()
+                if state_next is not None
+                else None
+            )
             row = {
                 "episode_id": int(ep),
                 "frame_idx": int(local_t),
+                "episode_len": int(len(idxs)),
+                "episode_success": bool(episode_success),
                 "task": str(task),
                 "action": action.tolist(),
+                "state": state_list,
+                "state_next": state_next_list,
                 "outcome": build_outcome_string(labels, active_fields=active_fields),
                 "image_path": str(out_path),
             }

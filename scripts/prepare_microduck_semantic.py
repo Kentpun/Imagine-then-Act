@@ -13,6 +13,12 @@ import json
 import random
 from pathlib import Path
 
+from swm.microduck.semantic_tasks import (
+    SceneState,
+    TaskKind,
+    label_microduck_transition,
+    step_scene,
+)
 from swm.utils.config import load_config
 from swm.utils.io import ensure_dir, write_jsonl
 from swm.utils.seed import set_seed
@@ -25,38 +31,44 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
+def _scene_from_row(row: dict, *, use_next: bool = False) -> SceneState:
+    prefix = "next_" if use_next else ""
+    return SceneState(
+        duck_x=float(row.get(f"{prefix}duck_x", row["duck_x"])),
+        duck_y=float(row.get(f"{prefix}duck_y", row["duck_y"])),
+        duck_yaw=float(row.get(f"{prefix}duck_yaw", row["duck_yaw"])),
+        ball_x=float(row.get(f"{prefix}ball_x", row["ball_x"])),
+        ball_y=float(row.get(f"{prefix}ball_y", row["ball_y"])),
+        zone_cx=float(row.get("zone_cx", 0.0)),
+        zone_cy=float(row.get("zone_cy", 0.0)),
+        zone_r=float(row.get("zone_r", 0.35)),
+        goal_x=float(row.get("goal_x", 1.2)),
+        goal_y=float(row.get("goal_y", 0.0)),
+        zone_b_x=float(row.get("zone_b_x", 1.0)),
+        zone_b_y=float(row.get("zone_b_y", 0.5)),
+    )
+
+
 def build_duck_outcome(row: dict, *, next_row: dict | None, episode_len: int) -> str:
+    del episode_len
     vx = float(row.get("vx", 0.0))
-    moved = "yes" if abs(vx) > 0.05 else "no"
-    # progress toward success
-    if next_row is not None:
-        if next_row.get("success") and not row.get("success"):
-            progress = "up"
-        elif row.get("success") and not next_row.get("success"):
-            progress = "down"
-        elif abs(vx) > 0.1:
-            progress = "up"
-        else:
-            progress = "flat"
+    yaw = float(row.get("yaw", 0.0))
+    skill = str(row.get("skill") or ("walk" if abs(vx) > 0.05 else "hold"))
+    task_kind: TaskKind = row.get("task_kind", "walk_ab")
+
+    s0 = _scene_from_row(row, use_next=False)
+    if "next_duck_x" in row:
+        s1 = _scene_from_row(row, use_next=True)
+    elif next_row is not None:
+        s1 = _scene_from_row(next_row, use_next=False)
     else:
-        progress = "up" if abs(vx) > 0.1 else "flat"
-    ball_in = "yes" if row.get("ball_in_zone") else "no"
-    facing = "yes" if row.get("facing_goal") else "no"
-    remaining = episode_len - int(row.get("frame_idx", 0)) - 1
-    success_near = (
-        "yes"
-        if row.get("success") or (remaining <= 5 and next_row and next_row.get("success"))
-        else "no"
-    )
-    skill = str(row.get("skill") or "hold")
-    if skill not in {"walk", "kick", "hold"}:
-        skill = "walk" if abs(vx) > 0.05 else "hold"
-    # Pack into a single line; extra fields after the LIBERO five for duck.
-    return (
-        f"moved={moved}; lifted=no; gripper=hold; progress={progress}; "
-        f"success_near={success_near}; ball_in_zone={ball_in}; "
-        f"facing_goal={facing}; skill={skill}"
-    )
+        s1 = step_scene(
+            s0,
+            0.0 if skill == "kick" else max(0.0, vx),
+            0.0 if skill == "kick" else yaw,
+            skill=skill,
+        )
+    return label_microduck_transition(task_kind, s0, s1, vx, yaw, skill=skill)
 
 
 def action_vec(row: dict) -> list[float]:
@@ -104,12 +116,32 @@ def main() -> None:
             dest = frames_out / rel
             if src.is_file() and not dest.is_file():
                 dest.write_bytes(src.read_bytes())
+            scene_state = {
+                k: float(row[k])
+                for k in (
+                    "duck_x",
+                    "duck_y",
+                    "duck_yaw",
+                    "ball_x",
+                    "ball_y",
+                    "zone_cx",
+                    "zone_cy",
+                    "zone_r",
+                    "goal_x",
+                    "goal_y",
+                    "zone_b_x",
+                    "zone_b_y",
+                )
+                if k in row and row[k] is not None
+            }
             out_row = {
                 "episode_id": ep,
                 "frame_idx": int(row["frame_idx"]),
+                "episode_len": len(steps),
                 "task": row["task"],
                 "task_kind": row.get("task_kind"),
                 "action": action_vec(row),
+                "scene_state": scene_state or None,
                 "outcome": build_duck_outcome(row, next_row=nxt, episode_len=len(steps)),
                 "image_path": str(dest if dest.is_file() else src),
                 "skill": row.get("skill"),

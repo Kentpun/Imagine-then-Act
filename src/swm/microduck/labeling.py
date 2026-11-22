@@ -54,13 +54,21 @@ def build_outcome_string(labels: dict[str, str]) -> str:
     )
 
 
-def score_from_outcome(outcome: str) -> float:
+def score_from_outcome(outcome: str, task: str = "") -> float:
     """Map a predicted outcome string to a scalar for planning.
 
     Accepts MicroDuck labels and the LIBERO LoRA schema
     (moved / progress / success_near), so a Part A checkpoint can rank velocities.
+    When ``task`` is provided, task-specific bonuses (``ball_in_zone`` / ``hold`` vs
+    ``kick``) are gated so distractor objects do not bias unrelated tasks.
     """
     text = outcome.lower().replace(" ", "")
+    t = (task or "").lower()
+    is_zone_task = (not t) or ("circle" in t) or ("else hold" in t) or (
+        "zone" in t and "zone b" not in t
+    )
+    is_kick_task = (not t) or ("kick" in t) or ("goal" in t)
+
     score = 0.0
     if "progressed=yes" in text:
         score += 2.0
@@ -72,26 +80,28 @@ def score_from_outcome(outcome: str) -> float:
         score += 0.5
     if "goal_near=yes" in text:
         score += 3.0
-    # LIBERO-trained checkpoint emits this schema.
+    # LIBERO-trained / shared transition schema.
     if "moved=yes" in text:
-        score += 1.5
+        score += 1.0
     if "progress=up" in text:
-        score += 2.0
+        score += 2.5
     if "progress=down" in text:
-        score -= 1.0
+        score -= 2.0
     if "success_near=yes" in text:
         score += 2.0
     if "lifted=yes" in text:
         score += 0.25
     # MicroDuck semantic fields from Part-2 LoRA.
-    if "ball_in_zone=yes" in text:
-        score += 2.5
     if "facing_goal=yes" in text:
         score += 1.0
-    if "skill=kick" in text:
-        score += 1.5
-    if "skill=hold" in text and "ball_in_zone=yes" in text:
-        score += 1.0
+    if is_zone_task:
+        if "ball_in_zone=yes" in text:
+            score += 2.0
+        if "skill=hold" in text and "ball_in_zone=yes" in text and "progress=up" in text:
+            score += 2.5
+    if is_kick_task:
+        if "skill=kick" in text and "facing_goal=yes" in text and "progress=up" in text:
+            score += 2.5
     return score
 
 

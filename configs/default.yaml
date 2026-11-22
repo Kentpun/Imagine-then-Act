@@ -68,11 +68,18 @@ eval:
   zero_shot_baseline: true
 
 planner:
+  # mode: grid (legacy fixed candidates) | propose (VLM proposes actions)
+  # score_mode: heuristic (hand score) | vlm_preference (VLM ranks outcomes)
+  mode: propose
+  score_mode: vlm_preference
+  n_proposals: 8
   grid_xy: [-0.05, -0.025, 0.0, 0.025, 0.05]
   dz_values: [0.0, 0.02]
   gripper_values: [0.0, 1.0]  # 0=open, 1=close
   max_horizon: 1
   max_candidates: 16
+  propose_max_new_tokens: 160
+  prefer_max_new_tokens: 64
 
 demo:
   host: 127.0.0.1

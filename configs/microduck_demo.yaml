@@ -33,13 +33,20 @@ train:
   gradient_checkpointing: true
 
 planner:
+  # VLM proposes (vx,yaw[/kick]); falls back to sparse grid if parse fails.
+  mode: propose
+  score_mode: vlm_preference
+  n_proposals: 4
   # Sparse set for interactive Mac demos (full grids stay in train/eval configs).
   vx_values: [0.0, 0.15, 0.25]
   vy_values: [0.0]
   yaw_values: [-0.5, 0.0, 0.5]
-  max_candidates: 4
+  max_candidates: 6
   include_kick: false
-  max_new_tokens: 24
+  max_new_tokens: 48
+  propose_max_new_tokens: 160
+  prefer_max_new_tokens: 48
+  verbose_propose: true
   replan_every_s: 4.0
   merge_lora: true
 
