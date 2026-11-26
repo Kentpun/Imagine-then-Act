@@ -1,0 +1,62 @@
+# Paper-faithful MicroDuck live Imagine-then-Act demo (NO CircleKeeper, NO velocity snapping).
+seed: 42
+
+paths:
+  root: .
+  smoke_dir: data/microduck_smoke
+  output_dir: outputs/microduck_demo
+
+model:
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  checkpoint: outputs/microduck_semantic/checkpoint-final
+  load_in_4bit: false
+  freeze_vision: true
+  # Match exact 256x256 zone.ppm resolution so ViT uses minimum tokens & memory
+  max_pixels: 65536
+  lora:
+    r: 16
+    alpha: 32
+    dropout: 0.05
+    target_modules:
+      - q_proj
+      - k_proj
+      - v_proj
+      - o_proj
+      - gate_proj
+      - up_proj
+      - down_proj
+
+train:
+  bf16: true
+  fp16: false
+  gradient_checkpointing: true
+
+planner:
+  # Paper-faithful fixed candidate grid + deterministic algebraic outcome scorer
+  mode: grid
+  score_mode: heuristic
+  vx_values: [0.0, 0.25]
+  vy_values: [0.0]
+  yaw_values: [-0.5, 0.0, 0.5]
+  max_candidates: 6
+  include_kick: true
+  max_new_tokens: 40
+  merge_lora: true
+  # Shared-image KV-cache + 6-jump structured decode (~6x faster, ~4x less ViT memory)
+  fast_structured_decode: true
+  # Genuine closed-loop step-and-think control (pauses duck during LoRA evaluation)
+  raw_control: true
+  step_and_think: true
+  pause_before_plan_s: 0.12
+  act_duration_s: 1.15
+  replan_every_s: 1.0
+
+mqtt:
+  enabled: true
+  dry_run: false
+  session_env: .demo/session.env
+  host: broker.emqx.io
+  port: 1883
+  session_id: null
+  duration_s: 1.6
+  rate_hz: 10.0

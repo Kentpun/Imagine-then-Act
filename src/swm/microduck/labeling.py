@@ -102,6 +102,18 @@ def score_from_outcome(outcome: str, task: str = "") -> float:
     if is_kick_task:
         if "skill=kick" in text and "facing_goal=yes" in text and "progress=up" in text:
             score += 2.5
+
+    # Penalize idling (skill=hold / moved=no without kick) when the VLM's own
+    # imagined outcome says the task is still unsolved, so HOLD never freezes
+    # the robot mid-field after grazing past the ball (0.0 vs -1.0 recovery turn).
+    is_idle = ("skill=hold" in text) or (
+        "moved=no" in text and "skill=kick" not in text and "gripper=close" not in text
+    )
+    solved_in_imagination = ("success_near=yes" in text) or (
+        is_zone_task and "ball_in_zone=yes" in text
+    )
+    if is_idle and not solved_in_imagination:
+        score -= 3.5
     return score
 
 

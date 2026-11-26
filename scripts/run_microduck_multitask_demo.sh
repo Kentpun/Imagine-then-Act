@@ -1,31 +1,7 @@
 #!/usr/bin/env bash
-# Part 2 multitask CCTV demo: Imagine-then-Act + duck detector + MQTT.
-# Terminal 1: cd ../microduck_demo_part1 && MICRODUCK_SKIP_VLM=1 ./scripts/run_simulator.sh --vision-ball
-# Terminal 2: this script
+# Part 2 multitask CCTV demo: genuine Imagine-then-Act + duck detector + raw MQTT (no CircleKeeper).
+# Terminal 1: cd ../microduck_demo_part1 && ./scripts/run_raw_simulator.sh walk_ab
+# Terminal 2: bash scripts/run_microduck_multitask_demo.sh walk_ab
 set -euo pipefail
 cd "$(dirname "$0")/.."
-export PYTHONPATH="${PYTHONPATH:-}:$(pwd)/src"
-
-PRESET="${1:-keep_zone}"
-CKPT="${CHECKPOINT:-outputs/microduck_semantic/checkpoint-final}"
-if [[ ! -d "$CKPT" ]]; then
-  CKPT="outputs/superpod/checkpoint-final"
-  echo "MicroDuck LoRA missing; falling back to LIBERO LoRA at $CKPT"
-fi
-# Prefer the Mac-fast demo grid; train.yaml keeps denser candidates for offline eval.
-CONFIG="${CONFIG:-configs/microduck_demo.yaml}"
-if [[ ! -f "$CONFIG" ]]; then
-  CONFIG=configs/microduck_train.yaml
-fi
-
-DET_ARGS=()
-if [[ -f outputs/microduck_detector/best.pt ]]; then
-  DET_ARGS=(--detector-weights outputs/microduck_detector/best.pt)
-fi
-
-python -m swm.microduck.vision_loop \
-  --mode imagine \
-  --task-preset "$PRESET" \
-  --checkpoint "$CKPT" \
-  --config "$CONFIG" \
-  "${DET_ARGS[@]}"
+exec bash scripts/run_microduck_raw_demo.sh "$@"

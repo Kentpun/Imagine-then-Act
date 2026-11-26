@@ -15,14 +15,13 @@
       0.5,
       0.5
     ],
-    "max_pixels": 200704,
     "merge_size": 2,
     "patch_size": 16,
     "resample": 3,
     "rescale_factor": 0.00392156862745098,
     "size": {
-      "longest_edge": 16777216,
-      "shortest_edge": 65536
+      "longest_edge": 200704,
+      "shortest_edge": 50176
     },
     "temporal_patch_size": 2
   },

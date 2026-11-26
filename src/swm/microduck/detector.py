@@ -51,7 +51,10 @@ class DuckDetector:
 
     def _detect_yolo(self, image: Image.Image) -> list[Detection]:
         assert self._model is not None
-        res = self._model.predict(np.asarray(image.convert("RGB")), conf=self.conf, verbose=False)
+        # Keep YOLO on CPU so 8GB GPUs (e.g. RTX 3060 Ti) dedicate 100% VRAM to Qwen3-VL.
+        res = self._model.predict(
+            np.asarray(image.convert("RGB")), conf=self.conf, device="cpu", verbose=False
+        )
         out: list[Detection] = []
         if not res:
             return out

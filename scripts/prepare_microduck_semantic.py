@@ -148,6 +148,7 @@ def main() -> None:
             }
             (val_rows if ep in val_eps else train_rows).append(out_row)
 
+    rng.shuffle(train_rows)
     n_train = write_jsonl(Path(processed) / "train.jsonl", train_rows)
     n_val = write_jsonl(Path(processed) / "val.jsonl", val_rows)
     print(f"Wrote {n_train} train / {n_val} val → {processed}")

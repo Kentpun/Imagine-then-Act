@@ -117,17 +117,32 @@ class MicroDuckImaginationPlanner:
 
     def _predict_batch(
         self, image: Image.Image, task: str, actions: list[list[float]]
-    ) -> list[str]:
+    ) -> tuple[list[str], list[float]]:
         if self.mock:
-            return [mock_outcome(a, task) for a in actions]
-        from swm.models.semantic_vlm import generate_outcomes_batch
+            return [mock_outcome(a, task) for a in actions], [0.0] * len(actions)
+        from swm.models.semantic_vlm import (
+            generate_microduck_outcomes_fast,
+            generate_outcomes_batch,
+        )
 
         pairs = [self._to_libero_action_and_prompt(task, a) for a in actions]
         libero_actions = [p[0] for p in pairs]
         prompts = [p[1] for p in pairs]
-        max_new = int(self.cfg.get("planner", {}).get("max_new_tokens", 48))
-        bs = int(self.cfg.get("planner", {}).get("batch_size", 8))
-        return generate_outcomes_batch(
+        plan_cfg = self.cfg.get("planner", {})
+        max_new = int(plan_cfg.get("max_new_tokens", 40))
+        bs = int(plan_cfg.get("batch_size", 8))
+        if bool(plan_cfg.get("fast_structured_decode", True)):
+            return generate_microduck_outcomes_fast(
+                self.model,
+                self.processor,
+                image,
+                task,
+                libero_actions,
+                prompts=prompts,
+                max_new_tokens=max_new,
+                batch_size=bs,
+            )
+        res = generate_outcomes_batch(
             self.model,
             self.processor,
             image,
@@ -136,7 +151,10 @@ class MicroDuckImaginationPlanner:
             prompts=prompts,
             max_new_tokens=max_new,
             batch_size=bs,
+            return_margins=True,
         )
+        assert isinstance(res, tuple)
+        return res
 
     def _resolve_actions(
         self,
@@ -219,12 +237,19 @@ class MicroDuckImaginationPlanner:
                 f"n={len(acts)} (batched)",
                 flush=True,
             )
-        outcomes = self._predict_batch(image, task, acts)
+        outcomes, margins = self._predict_batch(image, task, acts)
         scores = self._score_batch(image, task, acts, outcomes)
-        ranked = [
-            RankedAction(action=a, outcome=o, score=float(s))
-            for a, o, s in zip(acts, outcomes, scores)
-        ]
+        ranked = []
+        for a, o, s, m in zip(acts, outcomes, scores, margins):
+            yaw_v = float(a[2]) if len(a) > 2 else 0.0
+            yaw_pen = 0.0 if abs(yaw_v - 9.0) < 1e-6 else 0.15 * abs(yaw_v)
+            ranked.append(
+                RankedAction(
+                    action=a,
+                    outcome=o,
+                    score=float(s) - yaw_pen + 0.08 * float(m),
+                )
+            )
         ranked.sort(key=lambda x: x.score, reverse=True)
         return ranked
 

@@ -25,3 +25,22 @@ def test_prompt_contains_velocity():
     text = build_prompt("walk forward", [0.2, 0.0, -0.3])
     assert "velocity=" in text
     assert "Answer:" in text
+
+
+def test_hold_never_freezes_when_ball_outside_zone():
+    task = "keep the orange ball inside the green circle"
+    hold_outside = (
+        "moved=no; lifted=no; gripper=hold; progress=flat; "
+        "success_near=no; ball_in_zone=no; facing_goal=no; skill=hold"
+    )
+    recovery_turn = (
+        "moved=yes; lifted=no; gripper=hold; progress=down; "
+        "success_near=no; ball_in_zone=no; facing_goal=no; skill=walk"
+    )
+    hold_inside = (
+        "moved=no; lifted=no; gripper=hold; progress=up; "
+        "success_near=yes; ball_in_zone=yes; facing_goal=yes; skill=hold"
+    )
+    assert score_from_outcome(recovery_turn, task=task) > score_from_outcome(hold_outside, task=task)
+    assert score_from_outcome(hold_inside, task=task) > score_from_outcome(recovery_turn, task=task)
+

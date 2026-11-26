@@ -1,0 +1,64 @@
+# MicroDuck Live Imagine-then-Act Demo — Tuned for Windows + NVIDIA RTX 3060 Ti (8GB VRAM, 32GB RAM)
+# Peak VRAM: ~4.6 GB in native Ampere bf16 (or ~2.2 GB if launched with --4bit).
+# Control step latency on RTX 3060 Ti: ~0.25 - 0.40s per ranking cycle.
+seed: 42
+
+paths:
+  root: .
+  smoke_dir: data/microduck_smoke
+  output_dir: outputs/microduck_demo
+
+model:
+  model_id: Qwen/Qwen3-VL-2B-Instruct
+  checkpoint: outputs/microduck_semantic/checkpoint-final
+  load_in_4bit: false
+  freeze_vision: true
+  attn_implementation: sdpa
+  # Exact 256x256 overhead camera budget -> minimal ViT tokens & VRAM
+  max_pixels: 65536
+  lora:
+    r: 16
+    alpha: 32
+    dropout: 0.05
+    target_modules:
+      - q_proj
+      - k_proj
+      - v_proj
+      - o_proj
+      - gate_proj
+      - up_proj
+      - down_proj
+
+train:
+  bf16: true
+  fp16: false
+  gradient_checkpointing: true
+
+planner:
+  mode: grid
+  score_mode: heuristic
+  vx_values: [0.0, 0.25]
+  vy_values: [0.0]
+  yaw_values: [-0.5, 0.0, 0.5]
+  max_candidates: 6
+  batch_size: 6
+  include_kick: true
+  max_new_tokens: 40
+  merge_lora: true
+  # Shared-image KV-cache + 6-jump structured decode (~6x faster than 48-step generate)
+  fast_structured_decode: true
+  raw_control: true
+  step_and_think: true
+  pause_before_plan_s: 0.12
+  act_duration_s: 1.15
+  replan_every_s: 1.0
+
+mqtt:
+  enabled: true
+  dry_run: false
+  session_env: ../microduck_demo_part1/.demo/session.env
+  host: broker.emqx.io
+  port: 1883
+  session_id: null
+  duration_s: 1.0
+  rate_hz: 10.0
